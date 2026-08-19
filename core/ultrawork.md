@@ -1,4 +1,4 @@
-# omo-bridge / core / ultrawork.md — ultrawork 编排协议（平台无关）
+# omo-deepseek-harness / core / ultrawork.md — ultrawork 编排协议（平台无关）
 
 > 借鉴 OMO 的 ultrawork 理念：一个词触发，所有 agent 激活，不完成不停止。
 > 本文件描述协议本身；各 adapter 负责在本平台落地驱动机制。
@@ -34,7 +34,7 @@
 
 ## 2. todo 持久与续跑（boulder）
 
-- 每轮开始先读 todo（本平台持久化机制：DSH=session state, WorkBuddy=TaskList, Trae=文件）。
+- 每轮开始先读 todo（DSH: session state + tool-todo）。
 - 每步完成立即更新 todo 状态。
 - 中断恢复时，从 todo 断点继续，不重头。
 - 这是「不完成不停止」的实现基础——状态在 todo 里，不在对话记忆里。
@@ -61,5 +61,5 @@ OMO 原生 ultrawork 依赖 54+ 生命周期 hooks（`tool.pre/post`、`session.
 - [ ] 触发词识别（把 ultrawork 路由到 Sisyphus preset / Skill / rule）
 - [ ] todo 持久化载体映射（session state / TaskList / 文件）
 - [ ] 续跑入口（用户输入「继续」或重启后能从断点恢复）
-- [ ] 子 agent 委派通道（DSH: cordis sub-preset; WorkBuddy: sub-Skill; Trae: 子 rule）
+- [ ] 子 agent 委派通道（DSH: cordis sub-preset）
 - [ ] 独立验证通道（Sisyphus 能用只读工具复验，不信子 agent）

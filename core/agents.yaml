@@ -1,4 +1,4 @@
-# omo-bridge / core / agents.yaml
+# omo-deepseek-harness / core / agents.yaml
 #
 # 平台无关的「纪律型 Agent」定义。借鉴 oh-my-openagent (OMO) 的 11 Agent 理念，
 # 但仅保留概念与职责，不含任何 OMO 源码。
@@ -14,7 +14,7 @@
 #   description     : 职责一句话
 #
 # 各 adapter 负责把这里的抽象定义落地成平台原生形态
-# (DSH: cordis agent-preset; WorkBuddy: Skill; Trae: rules 块)。
+# (DSH: cordis agent-preset / tool-subagent persona)。
 
 version: 1
 agents:

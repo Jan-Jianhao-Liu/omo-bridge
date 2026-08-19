@@ -1,59 +1,51 @@
-# omo-bridge / adapters / dsh / category-model-map.yaml
+# omo-deepseek-harness / adapters / dsh / category-model-map.yaml
 #
-# DSH adapter 的 category → 模型映射表。
-# 本机 ollama 模型池（来自 ~/.dsh/settings.yaml llm-pi-ai.providers.ollama-local.models）。
+# category → 模型路由映射（deepseek-v4-flash 版）。
+# 借鉴 OMO 的 category-based routing 理念：agent 委派子任务时只说「需要 deep 类工作」，
+# harness 根据本映射挑对应模型。不锁死单一供应商。
 #
-# 诚实约束（以用户实测为准，非 settings.yaml 注释）：
-#   ollama 上的 deepseek-r1:7b / deepseek-coder-v2 无 tools 能力标签，
-#   tool-subagent 当 agent 调用会 400。需 tool 的 agent 只能绑 qwen 系。
+# 默认 agent 模型：deepseek-v4-flash（deepseek-official provider，reasoningEffort high，
+# 支持 tools 调用）。本机设置见 ~/.dsh/settings.yaml 的 agent-default-model。
 
 version: 1
-provider: ollama-local
+default_provider: deepseek-official
+default_model: deepseek-v4-flash
 
-# 可当 agent（需 tools 能力）的模型池
-tool_capable_models:
-  - id: qwen3.5:4b
-    role: [orchestrator, deep]
-    notes: 主 agent，50+ tok/s，质量冠军
-  - id: qwen3.5:2b
-    role: [quick]
-    notes: 75 tok/s 小钢炮，快速任务
-  - id: my-qwen4b-no-think:latest
-    role: [orchestrator, deep]
-    notes: 免思考便捷版，长提示不退化
-
-# 仅推理（无 tools 能力）的模型池 —— 只能绑 needs_tools:false 的 agent
-reasoning_only_models:
-  - id: deepseek-r1:7b
-    role: [ultrabrain]
-    notes: 仅推理，不调工具；绑 Oracle/Metis/Momus 时必须 toolFilter.deny 写工具
-  - id: deepseek-coder-v2
-    role: [ultrabrain]
-    notes: settings.yaml 注释标 tool-capable，实测无 tools 能力，按推理用
-
-# category → 默认 model 路由（Sisyphus 委派 subagent 时引用）
+# category → 模型路由
 routing:
   orchestrator:
-    model: qwen3.5:4b
+    model: deepseek-v4-flash
+    reasoning_effort: high
     needs_tools: true
-  deep:
-    model: qwen3.5:4b
-    needs_tools: true
-  quick:
-    model: qwen3.5:2b
-    needs_tools: true
-  ultrabrain:
-    model: deepseek-r1:7b
-    needs_tools: false           # 必须，否则 400
-    tool_filter:
-      deny: [tool-fs, tool-str-replace-editor, tool-pwsh, tool-jobs]
-      # 仅留 tool-fs-search(只读) / tool-web(只读) / tool-subagent-report
-  visual:
-    model: null                  # 本机缺多模态
-    fallback: orchestrator       # 降级到 qwen3.5:4b
+    typical_agents: [sisyphus, atlas]
 
-# 缺失能力诚实声明
-gaps:
-  - 无多模态模型 → visual 类降级 orchestrator（Multimodal Looker 暂不可用）
-  - 无 OpenCode 式生命周期 hooks → ultrawork 靠提示词驱动 + tool-todo 续跑（非原生 hook 触发）
-  - Hashline（内容哈希验证编辑）→ 降级为 tool-str-replace-editor 前后读校验
+  deep:
+    model: deepseek-v4-flash
+    reasoning_effort: high
+    needs_tools: true
+    typical_agents: [hephaestus]
+
+  quick:
+    model: deepseek-v4-flash
+    reasoning_effort: medium
+    needs_tools: true
+    typical_agents: [explore, sisyphus-junior, librarian]
+
+  ultrabrain:
+    model: deepseek-v4-flash
+    reasoning_effort: high
+    needs_tools: false
+    typical_agents: [prometheus, oracle, metis, momus]
+
+  visual:
+    model: deepseek-v4-flash
+    reasoning_effort: high
+    needs_tools: false
+    typical_agents: [multimodal-looker]
+
+# 说明
+notes:
+  - 单一模型池（deepseek-v4-flash）时，类别差异通过 reasoning_effort 与 needs_tools 体现：
+    quick 用 medium effort 提速，orchestrator/deep/ultrabrain 用 high effort 保质量。
+  - needs_tools: false 的 agent（只读分析型）不暴露写工具，纯推理顾问。
+  - 若未来接入多模型池，在 routing 各 category 下替换 model 即可，core 层无需改动。

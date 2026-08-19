@@ -1,4 +1,0 @@
-pwsh_exists=False
-pwsh_path=
-ps_version=5.1.19041.1320
-powershell_exe_path=C:\Windows\System32\WindowsPowerShell\v1.0

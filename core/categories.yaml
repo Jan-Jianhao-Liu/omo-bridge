@@ -1,4 +1,4 @@
-# omo-bridge / core / categories.yaml
+# omo-deepseek-harness / core / categories.yaml
 #
 # 任务类别 → 模型能力要求。平台无关：这里只描述「这类任务需要什么样的模型能力」，
 # 不绑定具体模型 id。各 adapter 负责把 category 映射到本平台的真实模型。
