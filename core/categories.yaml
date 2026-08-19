@@ -1,0 +1,71 @@
+# omo-bridge / core / categories.yaml
+#
+# 任务类别 → 模型能力要求。平台无关：这里只描述「这类任务需要什么样的模型能力」，
+# 不绑定具体模型 id。各 adapter 负责把 category 映射到本平台的真实模型。
+#
+# 借鉴 OMO 的 category-based routing 理念：agent 委派子任务时只说「需要 deep 类工作」，
+# harness 根据 adapter 的映射挑对应模型。不锁死单一供应商。
+#
+# 字段说明：
+#   category      : 类别名
+#   intent        : 什么任务归这类（路由判据）
+#   requirements  : 模型能力要求 (tool_calling | reasoning | long_context | speed | multimodal)
+#   fallback      : 本平台无合适模型时的降级类别
+#   typical_agents: 默认走这类的 agent id 列表
+
+version: 1
+categories:
+  - category: orchestrator
+    intent: 多步编排、委派、驱动到完成、跨子任务追踪
+    requirements:
+      - tool_calling    # 必须能调 edit/bash/read/grep
+      - reasoning
+      - long_context
+    fallback: deep
+    typical_agents: [sisyphus, atlas]
+
+  - category: deep
+    intent: 自主深度工作、复杂架构、跨域综合、长时间高强度独立编码
+    requirements:
+      - tool_calling
+      - reasoning
+      - long_context
+    fallback: orchestrator
+    typical_agents: [hephaestus]
+
+  - category: quick
+    intent: 单文件修改、typo、小重构、快速 grep、轻量编排
+    requirements:
+      - tool_calling
+      - speed          # 速度优先
+    fallback: orchestrator
+    typical_agents: [explore, sisyphus-junior, librarian]
+
+  - category: ultrabrain
+    intent: 困难逻辑、架构决策、计划评审、高精度验证
+    requirements:
+      - reasoning      # 强推理，可不调工具（只读顾问）
+      - long_context
+    fallback: orchestrator
+    typical_agents: [prometheus, oracle, metis, momus]
+
+  - category: visual
+    intent: 前端/UI/UX、截图分析、设计稿、图表、PDF 视觉理解
+    requirements:
+      - multimodal
+    fallback: orchestrator   # 无多模态模型时降级到普通编排
+    typical_agents: [multimodal-looker]
+
+# adapter 映射契约（每个 adapter 必须提供）：
+#   把上面 5 个 category 映射到本平台真实模型池。
+#   adapter 需声明：
+#     - 每个 category 命中的 model id
+#     - 该 model 是否满足 needs_tools（与 agents.yaml 的 needs_tools 校验）
+#     - 缺失 category 时的降级路径
+#
+# 示例（DSH adapter，见 adapters/dsh/settings.patch.yaml）：
+#   orchestrator → qwen3.5:4b          (tool-capable ✅)
+#   deep         → qwen3.5:4b          (tool-capable ✅)
+#   quick        → qwen3.5:2b          (tool-capable ✅, fast)
+#   ultrabrain   → deepseek-r1:7b      (reasoning-only ❌ tool → 只能绑 needs_tools:false 的 agent)
+#   visual       → (缺失, 降级 orchestrator)

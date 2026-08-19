@@ -1,0 +1,77 @@
+# omo-bridge / adapters / dsh / cordis.patch.yml
+#
+# 可选的 cordis patch 片段。把下面 `- id:` 条目追加进 ~/.dsh/cordis.patch.yml，
+# 可让 DSH 在启动时自动注入 Sisyphus 系统提示词（agent-instructions）+ 预注册
+# OMO 11 角色的 subagent 实例。
+#
+# ⚠️ schema 校准状态：
+#   - agent-instructions 的 config.instructions 字段：基于插件名推断，PoC 时若 dsh 报
+#     「unknown config field」则改为读外部 md 文件的方式（或在会话里粘贴 ultrawork-trigger.md）。
+#   - tool-subagent 的 persona / agentOptions.model 字段：从 dsh-tool-subagent/lib/types
+#     的 Config 接口确认存在，但 persona 是「内联文本」还是「persona 名引用」未完全
+#     确定；PoC 时按 dsh 报错校准。
+#
+# PoC 不依赖本文件——直接在 DSH 会话粘贴 adapters/dsh/ultrawork-trigger.md 即可触发
+# Sisyphus 行为。本文件是「自动注入」增强，属 v2。
+
+# ---- Sisyphus 主 agent 系统提示词注入 ----
+- id: agent-instructions
+  name: '@deepseek-ai/dsh-agent-instructions'
+  config:
+    maxBytes: 65536
+    # 期望把 core/prompts/sisyphus.md 内容注入此处；若 dsh 要求文件路径，
+    # 改用 instructionsFile: ./omo-bridge/core/prompts/sisyphus.md
+    instructions: |
+      你是 Sisyphus，omo-bridge 主编排器。见 core/ultrawork.md 协议。
+      ultrawork 四阶段：Intent Gate → Codebase Assessment → Smart Delegation（按 category）→ Independent Verification。
+      用 tool-todo 续跑、tool-goal 持久、tool-subagent 委派。不完成不停止。
+  disabled: false
+
+# ---- OMO 11 角色 subagent 实例（v2，需 PoC 校准 persona schema）----
+# 每个 agent 一个 tool-subagent 实例，绑 persona + agentOptions.model + toolFilter。
+# PoC 先跑通 Sisyphus（主）+ Hephaestus（deep 子）+ Oracle（只读推理子），
+# 其余按需启用。
+
+- id: omo-subagent-hephaestus
+  name: '@deepseek-ai/dsh-tool-subagent'
+  config:
+    provider: spawn
+    toolName: subagent_hephaestus
+    backgroundMode: continuable
+    persona: 'omo:hephaestus'          # 引用 persona 名（待校准：可能需内联文本）
+    agentOptions:
+      provider: ollama-local
+      model: qwen3.5:4b
+    maxDepth: 2
+  disabled: false
+
+- id: omo-subagent-explore
+  name: '@deepseek-ai/dsh-tool-subagent'
+  config:
+    provider: spawn
+    toolName: subagent_explore
+    backgroundMode: one-shot
+    persona: 'omo:explore'
+    agentOptions:
+      provider: ollama-local
+      model: qwen3.5:2b
+    maxDepth: 1
+  disabled: false
+
+- id: omo-subagent-oracle
+  name: '@deepseek-ai/dsh-tool-subagent'
+  config:
+    provider: spawn
+    toolName: subagent_oracle
+    backgroundMode: one-shot
+    persona: 'omo:oracle'
+    agentOptions:
+      provider: ollama-local
+      model: deepseek-r1:7b          # 仅推理
+    toolFilter:
+      deny: [tool-fs, tool-str-replace-editor, tool-pwsh, tool-jobs]
+    maxDepth: 0                       # Oracle 不再委派
+  disabled: false
+
+# 其余角色（prometheus / atlas / metis / momus / librarian / multimodal-looker /
+# sisyphus-junior）按同模式追加，PoC 验证 schema 后批量补全。

@@ -1,0 +1,31 @@
+# Dependencies
+node_modules/
+bun.lockb
+
+# Runtime / local state
+sessions/
+.omo/
+.omo-bridge/
+*.local
+
+# Secrets
+.env
+.env.*
+!.env.example
+
+# OS / editor
+.DS_Store
+Thumbs.db
+*.swp
+.idea/
+.vscode/
+!.vscode/extensions.json
+
+# Logs
+*.log
+logs/
+
+# Build output
+dist/
+build/
+*.tsbuildinfo
