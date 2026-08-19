@@ -38,6 +38,42 @@ dsh                    # 或 dsh-web
 
 Sisyphus 会按 ultrawork 四阶段执行：意图门 → 摸架构 → 按 category 委派子 agent（`tool-subagent`）→ 独立复验，用 `tool-todo` 续跑，不完成不停止。
 
+## Headless 非交互验证（自动化 PoC）
+
+除上面「粘进会话」的交互方式，DSH 还支持非交互模式，适合自动化验证 / CI：
+
+dsh 可执行在 managed node 目录：`C:\Users\Administrator\.workbuddy\binaries\node\versions\22.22.2\dsh`
+
+```bash
+# ⚠️ 必须清 NODE_OPTIONS，否则 WorkBuddy 的 safe-delete shim 会让 dsh 内 fs 失败
+#    （见 ~/.dsh/dsh-web.cmd 同样的修复：set "NODE_OPTIONS="）
+export NODE_OPTIONS=
+DSH=/c/Users/Administrator/.workbuddy/binaries/node/versions/22.22.2/dsh
+
+# headless：答一个任务，打印 final assistant message，退出
+"$DSH" --profile headless "你的任务（含 Sisyphus 提示词，见 examples/dsh-poc-prompt.txt）"
+```
+
+参考产物：
+- `examples/poc-dsh-sisyphus.py` — ollama 直测大脑层（5/5 阶段 PASS）
+- `examples/dsh-poc-prompt.txt` — headless 端到端 prompt（Sisyphus 提示词 + 验证任务）
+- `examples/dsh-poc-output.log` — headless 真实运行输出
+- `examples/dsh-poc-workspace/` — headless 实际产生的文件产物
+
+> headless 模式会真实启动 qwen3.5:4b + 调 `tool-fs`/`tool-todo`/`tool-subagent`，agent run 约 3-10 分钟，建议 `run_in_background` + 长 timeout。
+
+## 端到端 PoC 实测结果（真实 DSH runtime）
+
+在真实 DSH runtime 上跑 `dsh --profile headless`（非交互），完整结果见 `examples/dsh-poc-result.md`：
+
+- ✅ dsh 真实启动 `qwen3.5:4b` + ultrawork 四阶段协议触发
+- ✅ `tool-todo` 续跑生效（3 次 `todo_write`，状态正确流转）
+- ✅ `tool-fs-search` 真实调用（`glob` → `No files found`）
+- ✅ category 路由意识（模型明说「qwen3.5:4b 有工具能力」）
+- ⚠️ subagent spawn 在 headless 中断（Step 4 Smart Delegation），多 agent 委派待 v2 闭环
+
+**诚实结论**：大脑层 + 单 agent 工具执行层完全可行；多 agent 委派层（spawn 子代理）待 `cordis.patch.yml` schema 校准 + 可能换交互式 web profile 验证。
+
 ## 诚实声明：OMO 特性在 DSH 的降级
 
 | OMO 原生特性 | DSH 状态 | 说明 |
