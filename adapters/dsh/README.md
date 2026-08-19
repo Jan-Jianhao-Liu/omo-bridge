@@ -64,15 +64,19 @@ DSH=/c/Users/Administrator/.workbuddy/binaries/node/versions/22.22.2/dsh
 
 ## 端到端 PoC 实测结果（真实 DSH runtime）
 
-在真实 DSH runtime 上跑 `dsh --profile headless`（非交互），完整结果见 `examples/dsh-poc-result.md`：
+两轮 headless 端到端（v1 → v2），完整诊断见 `examples/dsh-poc-result.md`（v1）+ `examples/dsh-poc-v2-result.md`（v2 + 根因诊断）：
 
-- ✅ dsh 真实启动 `qwen3.5:4b` + ultrawork 四阶段协议触发
-- ✅ `tool-todo` 续跑生效（3 次 `todo_write`，状态正确流转）
-- ✅ `tool-fs-search` 真实调用（`glob` → `No files found`）
-- ✅ category 路由意识（模型明说「qwen3.5:4b 有工具能力」）
-- ⚠️ subagent spawn 在 headless 中断（Step 4 Smart Delegation），多 agent 委派待 v2 闭环
+### v1（长 prompt + subagent 委派）：卡在模型 tool call 退化
+- ✅ dsh 真实启动 `qwen3.5:4b` + ultrawork 四阶段触发 + `tool-todo` 续跑 + `glob` 真调用
+- ❌ Step4 Smart Delegation 退化：qwen3.5:4b 在长 prompt（inputTokens=8855）下把 tool call 写成文本（`stopReason=stop` 非 `toolUse`），未 spawn subagent
 
-**诚实结论**：大脑层 + 单 agent 工具执行层完全可行；多 agent 委派层（spawn 子代理）待 `cordis.patch.yml` schema 校准 + 可能换交互式 web profile 验证。
+### v2（精简 prompt + 单 agent 直接执行）：文件创建闭环，测试被环境阻塞
+- ✅ **39 step 无 tool call 退化**（精简 prompt ~400 字解决 v1 根因）
+- ✅ `tool-fs` 真创建 3 文件（package.json / src/index.js / tests/index.test.js，内容正确）
+- ✅ `tool-todo` 续跑 + **不完成不停止契约真实执行**（模型遇问题死磕 19 次重试没放弃）
+- ⚠️ `tool-pwsh` 环境阻塞：PowerShell spawn 输出 UTF-16 乱码警告 + `exit 4294901760`（0xFFFF0000），所有命令无法执行，测试验证未闭环（**DSH 环境问题，非 adapter 问题**）
+
+**诚实结论**：大脑层 + tool-call 稳定性 + tool-fs 写文件闭环全部可行；「命令执行」被 DSH tool-pwsh 本机环境问题阻塞（v2.1 修：查 PowerShell spawn 失败 / 换 `tool-bash`）。多 agent subagent 委派（v3）需先解决 tool call 退化与 pwsh 环境。
 
 ## 诚实声明：OMO 特性在 DSH 的降级
 

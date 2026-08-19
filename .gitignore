@@ -30,3 +30,4 @@ dist/
 build/
 *.tsbuildinfo
 examples/dsh-poc-session.jsonl
+examples/dsh-poc-session-v2.jsonl

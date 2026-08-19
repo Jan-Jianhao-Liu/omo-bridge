@@ -1,0 +1,13 @@
+{
+  "name": "hello-world",
+  "version": "1.0.0",
+  "description": "Hello World Node.js project",
+  "type": "module",
+  "main": "src/index.js",
+  "scripts": {
+    "test": "node --test tests/"
+  },
+  "keywords": [],
+  "author": "Sisyphus",
+  "license": "MIT"
+}
