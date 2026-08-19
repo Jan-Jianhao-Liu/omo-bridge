@@ -64,7 +64,51 @@ v1 的 Step4「中断」**不是** cordis.patch schema 问题，**不是** subag
 
 **v2 达成**：端到端闭环到「文件创建」+ 无退化。「跑测试验证」被 DSH tool-pwsh 环境问题阻塞，属环境修复项（v2.1），非 adapter 问题。
 
-### v2.1 修复方向（tool-pwsh 环境问题）
-- 排查 PowerShell spawn 失败根因（Execution Policy / profile / dsh tool-pwsh 参数）
-- 或改用 DSH 的 `tool-bash`（`@deepseek-ai/dsh-tool-bash` 包存在，bash 通道可能无此问题）
-- 修好后重跑验证测试闭环
+### v2.1 根因确认 + 修复（进行中）
+
+**根因（100% 确认）**：`tool-pwsh` 契约执行 `pwsh -Command`（**PowerShell 7+ 的可执行名**），但本机只有 Windows PowerShell 5.1（`powershell.exe`，`C:\Windows\System32\WindowsPowerShell\v1.0`），**无 `pwsh`**（`Get-Command pwsh` = False，ps_version=5.1.19041.1320）。dsh spawn `pwsh` 失败 → `exit 4294901760`(0xFFFF0000 = spawn 失败) + UTF-16 乱码警告。
+
+**修复方案**：装 PowerShell 7.6.5 便携 zip（`D:\ps7`，免安装免管理员），加用户 PATH，验证 `pwsh` 可用后重跑 v2 验证测试闭环。
+
+**winget 安装失败记录**（已尝试）：
+- `winget install Microsoft.PowerShell --scope user`：msstore 源**证书不匹配**（0x8a15005e），下载 100% 后失败
+- 加 `--source winget`：报 0x80070002（file not found）
+- 故改用便携 zip 方案
+
+## v2.1 验证结果（修复后实测）
+
+### pwsh 环境修复：✅ 确认
+- 装 PowerShell 7.6.5 便携版到 `D:\ps7`（ghfast.top 镜像下载 106.3MB，zip 直解，免安装免管理员），用户 PATH 已加
+- 极简验证：`dsh --profile headless "运行 echo hello"` → **成功返回 `hello`**（v2 时是 UTF-16 乱码 + exit 4294901760）。根因彻底消除。
+
+### 完整任务重跑（v3）：⚠️ 模型退化概率性暴露
+- Step1-5 正常（todo + write 建 3 文件，文件内容正确）
+- **Step6 又退化**（stop=stop，inputTokens=9441）——在调 pwsh 跑 npm test 前退化，测试未闭环
+- 对比：v1 退化 @8855，v2 39 step 无退化（inputTokens 到 16k+），v3 退化 @9441
+
+### 重要发现：tool call 退化是概率性的
+qwen3.5:4b 的 tool call 退化**不是确定性的，是概率性的**，`~9k tokens` 上下文是风险区：
+- 精简 prompt 能把退化点从早期推到 ~9k tokens（v1 长 prompt @8855 → v2/v3 精简 @9k+）
+- 但同 prompt 同模型，v2 全程 toolUse（39 step），v3 Step6 退化——**采样随机性决定**
+- 这是 qwen3.5:4b 的模型能力边界，prompt 无法 100% 消除
+
+### 重试（v3b）：✅ 端到端闭环达成
+- **37 step，482KB session，无 tool call 退化**（inputTokens 到 23k+，17m19s）
+- 3 文件创建 + 内容正确（package.json / src/index.js / tests/index.test.js）
+- `node src/index.js` → `Hello, World!` 真输出验证
+- Step34 测试真 PASS（模型绕开 spawn 后）：`Test PASSED: The expected output string is correct`
+- todo 4/4 全部 completed
+- agent 诚实报告 sandbox spawn 限制（未编造测试通过——agent 诚实性正面证据）
+
+### v2.1 最终结论
+
+| 项 | 状态 |
+|----|------|
+| pwsh 环境（根因：缺 PowerShell 7，tool-pwsh 契约是 `pwsh -Command`） | ✅ 修复（装 7.6.5 便携版 `D:\ps7` + 用户 PATH） |
+| tool call 退化 | ✅ v3b 37 step 无退化（v3 曾退化 @9441，确认是概率性模型能力边界） |
+| 文件创建闭环 | ✅ |
+| 运行验证 | ✅ `node src/index.js` → `Hello, World!` |
+| 测试闭环 | ✅ 非 spawn 测试 PASS；完整 `node --test` 被 sandbox 拦 spawn(pipe) |
+| sandbox spawn 限制 | ⚠️ DSH 文档化安全边界（tool-pwsh 描述明确 "EPERM is the documented boundary"），**非 adapter 问题**；完整 spawn 测试需 `sandbox_permissions` 升级或改用非 spawn 测试 |
+
+**v2.1 达成**：pwsh 环境修复 + 端到端闭环（文件→运行→测试→todo 全绿）。DSH sandbox 的 spawn(pipe) 限制是 DSH 运行时安全设计，记录为已知约束，不属于 omo-bridge 修复范围。

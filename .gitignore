@@ -31,3 +31,5 @@ build/
 *.tsbuildinfo
 examples/dsh-poc-session.jsonl
 examples/dsh-poc-session-v2.jsonl
+examples/dsh-poc-session-v3.jsonl
+examples/dsh-poc-session-v3b.jsonl
