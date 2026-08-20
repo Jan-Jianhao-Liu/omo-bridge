@@ -1,3 +1,11 @@
+<p align="center">
+  <img src="assets/waifu_banner.png" width="100%" alt="omo-deepseek-harness · 命运塔楼大法师圣女" />
+</p>
+
+命令我已下达——键入 `ultrawork`。在任务完成之前，这座塔楼的符环永不停止转动。
+
+---
+
 <div align="center">
 
 # omo-deepseek-harness
