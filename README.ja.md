@@ -10,9 +10,17 @@
 
 ## これは何？
 
-`omo-deepseek-harness` は [oh-my-openagent](https://github.com/code-yeongyu/oh-my-openagent)（OMO）の **ディシプリン・エージェント + マルチモデルルーティング + ultrawork** という哲学を [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness)（DSH）に運ぶ、軽量で独立実装されたアダプタです（**MIT** ライセンス）。
+`omo-deepseek-harness` は [oh-my-openagent](https://github.com/code-yeongyu/oh-my-openagent)（OMO）の **ディシプリン・エージェント + マルチモデルルーティング + ultrawork** という哲学を [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness)（DSH）に運ぶ、軽量で独立実装されたアダプタです（**CC0-1.0** パブリックドメイン）。
 
 `ultrawork` と入力するだけで、Sisyphus が編成を開始します：意図解析 → コードベース評価 → カテゴリ別委任 → 独立検証。完了するまで止まりません。
+
+## 特徴
+
+- **一言トリガー** — `ultrawork`（または `ulw`）と入力するだけで、Sisyphus がタスクを完了まで推進します。
+- **ディシプリン・エージェント委任** — プリ登録されたロール・サブエージェント（`subagent_hephaestus` / `subagent_explore` / `subagent_oracle`）を DSH ネイティブの `tool-subagent` 上で利用。
+- **ultrawork 4 フェーズプロトコル** — 意図ゲート → コードベース評価 → カテゴリ別スマート委任 → 独立検証。
+- **完了まで止まらない契約** — `tool-todo` / `tool-goal` による Todo 永続化で再開；中断後もチェックポイントから続行。
+- **エンジンの再発明なし** — DSH のネイティブ機能の上に載せる薄いアダプタであり、新しいオーケストレーションランタイムではありません。
 
 ## 帰属（Attribution）
 
@@ -38,11 +46,10 @@ omo-deepseek-harness/
 │   ├── prompts/           # エージェントシステムプロンプト（{{platform_tools}} プレースホルダ）
 │   └── ultrawork.md       # ultrawork プロトコル：4 フェーズ + ToDo 継続 + 完了まで止まらない
 ├── adapters/dsh/          # DeepSeek Harness アダプタ（薄層）
-│   ├── ultrawork-trigger.md      # PoC エントリ：DSH セッションに貼り付け
+│   ├── ultrawork-trigger.md      # クイックエントリ：DSH セッションに貼り付けて Sisyphus を起動
 │   ├── AGENTS.md                 # Sisyphus プロンプト：~/.dsh/AGENTS.md にコピー（ホットリロード）
 │   ├── category-model-map.yaml   # category → deepseek-v4-flash ルーティング
 │   └── cordis.patch.yml          # 任意：OMO ロール・サブエージェントツール（スキーマ校正済み）
-├── examples/              # PoC スクリプトと証跡（analyze-dsh-session.py、3 ラウンド結果）
 └── docs/architecture.md   # 設計判断 + OMO 機能デグラデーションマップ
 ```
 
@@ -62,23 +69,11 @@ dsh    # または dsh-web
 ### Headless（自動化 / CI）
 
 ```bash
-"$DSH" --profile headless "タスク（examples/dsh-poc-prompt.txt 参照）"
+"$DSH" --profile headless "タスク"
 ```
-
-## PoC 証跡（実 DSH ランタイム）
-
-ヘッドレスでの 3 ラウンドのエンドツーエンド、完全分析は `examples/`：
-
-| ラウンド | 結果 |
-|----------|------|
-| v1（長いプロンプト + サブエージェント） | 4 フェーズ起動、`tool-todo` + `glob` の実呼び出し；Step4 でモデルのツール呼び出し退化（長いプロンプト） |
-| v2（簡潔なプロンプト + 単一エージェント） | **39 ステップ、退化ゼロ**；`tool-fs` が 3 ファイル作成；ネバーストップ契約を実証（19 回リトライ）；コマンド実行がシェル欠如でブロック |
-| v2.1（環境修正） | **37 ステップ、退化ゼロ**（23k+ トークン）；ファイル + 実行 + テストがクローズドループ；ToDo 4/4；エージェントがサンドボックス制限を正直に報告 |
-
-正直な制限は `docs/architecture.md` に記載——例えば OMO のフックベース自動化は DSH では「プロンプト駆動 + ToDo 継続」にデグラデーションし、DSH サンドボックスは `child_process spawn(pipe)` をブロックします（文書化された境界、`sandbox_permissions` のエスカレーションが必要）。
 
 ## ライセンス
 
-MIT — [LICENSE](./LICENSE) 参照。著作権 英壳科技武汉有限公司。
+**CC0 1.0 Universal（パブリックドメイン）** — [LICENSE](./LICENSE) 参照。著作権者を主張せず、帰属も不要です。
 
 本プロジェクトは oh-my-openagent のソースコードを含みません。oh-my-openagent の全権利は原作者に帰属し、SUL ライセンスの下で提供されます。

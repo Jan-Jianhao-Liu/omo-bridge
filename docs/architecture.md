@@ -1,6 +1,6 @@
 # omo-deepseek-harness 架构与设计决策
 
-> 本文记录 omo-deepseek-harness 的设计取舍：为什么 OMO 原生不支持 DeepSeek Harness、为什么选「借鉴理念 + 独立实现」、核心层如何组织、OMO 特性在 DSH 上的降级映射、以及三轮真实 runtime PoC 的结论。
+> 本文记录 omo-deepseek-harness 的设计取舍：为什么 OMO 原生不支持 DeepSeek Harness、为什么选「借鉴理念 + 独立实现」、核心层如何组织、OMO 特性在 DSH 上的降级映射、以及关键验证结论。
 
 ## 1. 设计目标与约束
 
@@ -19,7 +19,7 @@
 | **B** | **借鉴 OMO 理念，用 DSH 原生机制做轻量适配，共享 core 配置** | **✓** |
 | C | 从零造跨平台编排 npm 包 | ✗ 工作量最大，非本仓库目标 |
 
-选 B 的理由：OMO 的价值在「理念」（纪律 agent + 类别路由 + ultrawork 协议），不在「代码」。把理念抽成平台无关的 `core/`，DSH 写薄 adapter，用最小工作量落地，且不受 SUL 约束（不使用 OMO 源码，MIT）。
+选 B 的理由：OMO 的价值在「理念」（纪律 agent + 类别路由 + ultrawork 协议），不在「代码」。把理念抽成平台无关的 `core/`，DSH 写薄 adapter，用最小工作量落地，且不受 SUL 约束（不使用 OMO 源码，CC0-1.0 公有领域）。
 
 ## 3. DSH 扩展模型（为什么能接近原生复刻 OMO）
 
@@ -49,7 +49,7 @@ omo-deepseek-harness 只需把这些原生能力按 OMO 的 11 角色语义 + 5 
 ## 5. category → 模型路由
 
 - `core/categories.yaml`：类别 → 模型能力要求（tool_calling / reasoning / long_context / speed / multimodal）。
-- `adapters/dsh/category-model-map.yaml`：category → 具体模型路由。当前单模型池 **`deepseek-v4-flash`**（provider `deepseek-official`），类别差异通过 `reasoning_effort`（quick=medium / 其余=high）与 `needs_tools`（只读 agent 不暴露写工具）体现。
+- `adapters/dsh/category-model-map.yaml`：category → 具体模型路由。当前单模型池 **`deepseek-v4-flash`**（provider `deepseek-official`），类别差异通过工具暴露区分（只读 agent 用 `toolFilter` 不暴露写工具）；`reasoning_effort` 因当前 dsh 版本的 `tool-subagent.agentOptions` 不支持该字段而暂未落地。
 - 未来接入多模型池时，只改 adapter 的 routing，core 层不动。
 
 ## 6. OMO 原生特性 → DSH 降级映射（核心）
@@ -57,28 +57,22 @@ omo-deepseek-harness 只需把这些原生能力按 OMO 的 11 角色语义 + 5 
 | OMO 原生特性 | DSH 状态 | 说明 |
 |--------------|----------|------|
 | 54+ 生命周期 hooks | ❌ 无 | ultrawork 降级为「提示词驱动 + tool-todo 续跑」，非 hook 自动触发 |
-| 11 纪律 Agent | 🔨 部分 | PoC 跑通 Sisyphus(主)；subagent 多 agent 实例化待 cordis.patch persona schema 校准 |
-| category 模型路由 | ✅ | category → deepseek-v4-flash + reasoning_effort |
+| 11 纪律 Agent | 🔨 部分 | Sisyphus(主) 已跑通；Hephaestus / Explore / Oracle 子 agent 实例已按当前 dsh schema 校准（2026-08-20） |
+| category 模型路由 | ✅ | category → deepseek-v4-flash + 工具暴露区分 |
 | Hashline（哈希验证编辑） | 🔨 降级 | 用 `tool-str-replace-editor` 前后读校验替代 |
-| ultrawork 不完成不停止 | ✅ 等价 | Sisyphus 提示词 + tool-todo 续跑 + backgroundMode continuable（v2 实证：模型 19 次重试不放弃） |
+| ultrawork 不完成不停止 | ✅ 等价 | Sisyphus 提示词 + tool-todo 续跑 + backgroundMode continuable |
 | Team Mode（tmux 多 agent 可视化） | ❌ 无 | DSH 无 tmux；多 agent 靠 tool-subagent 后台 |
 | 命令执行 | ⚠️ sandbox 限制 | DSH sandbox 拦 `child_process spawn(pipe)`（EPERM，文档化边界）；需 `sandbox_permissions` 升级或非 spawn 方式 |
 
 「降级」≠ 不可用，而是诚实承认：没有原生 hook 的平台上，某些自动化退化为「多轮 prompt 驱动 + 外部续跑」的等价形态。
 
-## 7. PoC 结论（真实 DSH runtime，headless 非交互）
+## 7. 验证结论（真实 DSH runtime）
 
-| 轮 | 结果 |
-|----|------|
-| v1（长 prompt + subagent 委派） | 四阶段触发 + tool-todo + glob 真调用；Step4 模型 tool call 退化（长 prompt ~8.8k tokens） |
-| v2（精简 prompt + 单 agent） | **39 step 无退化**；tool-fs 真建 3 文件；不完成不停止契约实证；命令执行被缺 PowerShell 7 阻塞 |
-| v2.1（装 PowerShell 7.6.5） | **37 step 无退化**（23k+ tokens）；文件 + 运行 + 测试闭环；todo 4/4；agent 诚实报告 sandbox 限制 |
-
-**验证结论**：大脑层（ultrawork 协议）✅ / tool 层（todo/fs/subagent）✅ / 环境层（命令执行）✅ 全部可行。详见 `examples/dsh-poc-result.md` + `dsh-poc-v2-result.md`。
+大脑层（ultrawork 协议）、工具层（todo/fs/subagent）、环境层（命令执行）均已通过真实 DSH runtime 的 headless 端到端验证：文件创建闭环、测试运行通过、todo 续跑契约成立。
 
 ## 8. 许可证策略
 
-- 本项目 **MIT**，版权 英壳科技武汉有限公司。
+- 本项目 **CC0 1.0 Universal（公有领域）**，不声明版权人、不要求署名。
 - **不使用 OMO 任何源码**，仅借鉴理念，从零实现。
 - README 顶部 + LICENSE 均明确致敬声明 + 主仓链接，规避 SUL 约束。
 - Agent 命名（Sisyphus 等）作为概念命名沿用，非代码引用。

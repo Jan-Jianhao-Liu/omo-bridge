@@ -10,9 +10,17 @@
 
 ## What is this?
 
-`omo-deepseek-harness` brings the **discipline-agent + multi-model routing + ultrawork** philosophy of [oh-my-openagent](https://github.com/code-yeongyu/oh-my-openagent) (OMO) to [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness) (DSH) — a lightweight, independently-implemented adapter, licensed under **MIT**.
+`omo-deepseek-harness` brings the **discipline-agent + multi-model routing + ultrawork** philosophy of [oh-my-openagent](https://github.com/code-yeongyu/oh-my-openagent) (OMO) to [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness) (DSH) — a lightweight, independently-implemented adapter, released to the public domain under **CC0-1.0**.
 
 Type `ultrawork` once. Sisyphus orchestrates: parse intent → assess the codebase → delegate by category → verify independently. It does not stop until done.
+
+## Features
+
+- **One-word trigger** — type `ultrawork` (or `ulw`) and Sisyphus drives the task to completion.
+- **Discipline-agent delegation** — pre-registered role subagents (`subagent_hephaestus`, `subagent_explore`, `subagent_oracle`) on DSH's native `tool-subagent`.
+- **4-phase ultrawork protocol** — intent gate → codebase assessment → smart delegation by category → independent verification.
+- **Never-stop contract** — todo-persisted resumption via `tool-todo` / `tool-goal`; interrupted runs continue from the last checkpoint.
+- **No engine re-invention** — a thin adapter over DSH's native tooling, not a new orchestration runtime.
 
 ## Attribution
 
@@ -38,11 +46,10 @@ omo-deepseek-harness/
 │   ├── prompts/           # agent system prompts ({{platform_tools}} placeholders)
 │   └── ultrawork.md       # ultrawork protocol: 4-phase + todo continuity + never-stop
 ├── adapters/dsh/          # DeepSeek Harness adapter (the thin layer)
-│   ├── ultrawork-trigger.md      # PoC entry: paste into a DSH session
+│   ├── ultrawork-trigger.md      # quick entry: paste into a DSH session to trigger Sisyphus
 │   ├── AGENTS.md                 # Sisyphus prompt: copy to ~/.dsh/AGENTS.md (hot-reloads)
 │   ├── category-model-map.yaml   # category → deepseek-v4-flash routing
 │   └── cordis.patch.yml          # optional: pre-registered OMO subagent tools (schema-calibrated)
-├── examples/              # PoC scripts + evidence (analyze-dsh-session.py, poc results)
 └── docs/architecture.md   # design decisions + OMO-feature degradation map
 ```
 
@@ -74,23 +81,11 @@ cp adapters/dsh/AGENTS.md ~/.dsh/AGENTS.md
 ### Headless (automation / CI)
 
 ```bash
-"$DSH" --profile headless "your task (see examples/dsh-poc-prompt.txt)"
+"$DSH" --profile headless "your task"
 ```
-
-## PoC Evidence (real DSH runtime)
-
-Three headless end-to-end runs — full analysis in `examples/`:
-
-| Round | Result |
-|-------|--------|
-| v1 (long prompt + subagent) | 4-phase triggered, `tool-todo` + `glob` real calls; Step4 model tool-call degeneration (long prompt) |
-| v2 (concise prompt + single agent) | **39 steps, zero degeneration**; `tool-fs` created 3 files; never-stop contract proven (19 retries); command exec blocked by missing shell |
-| v2.1 (fixed env) | **37 steps, zero degeneration** (23k+ tokens); files + run + test closed loop; todo 4/4; agent honestly reported sandbox limits |
-
-Honest limitations are documented in `docs/architecture.md` — e.g. OMO's hook-based automation degrades to prompt-driven + todo-continuity on DSH, and DSH's sandbox blocks `child_process spawn(pipe)` (documented boundary, needs `sandbox_permissions` escalation).
 
 ## License
 
-MIT — see [LICENSE](./LICENSE). Copyright 英壳科技武汉有限公司.
+**CC0 1.0 Universal (public domain)** — see [LICENSE](./LICENSE). No copyright holder is asserted; no attribution required.
 
 This project contains no source code from oh-my-openagent. All rights to oh-my-openagent belong to its author, under the SUL license.

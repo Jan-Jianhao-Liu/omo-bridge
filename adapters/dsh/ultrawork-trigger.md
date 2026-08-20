@@ -2,7 +2,7 @@
 
 > **用法**：把下面整段 `---` 之间的内容粘贴进 DSH 会话，然后在同一会话里说你的任务（带 `ultrawork` 关键词）。Sisyphus 行为即被触发，用 DSH 原生工具完成 ultrawork 协议。
 >
-> 这是 PoC 入口。不依赖未校准的 cordis schema，纯提示词注入 + DSH 原生 `tool-todo` / `tool-goal` / `tool-subagent`。
+> 这是免安装入口：不需要 cordis patch，纯提示词注入 + DSH 原生 `tool-todo` / `tool-goal` / `tool-subagent`。
 
 ---
 

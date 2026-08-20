@@ -2,7 +2,7 @@
 
 把 [oh-my-openagent](https://github.com/code-yeongyu/oh-my-openagent)（OMO）的「纪律 Agent + 多模型路由 + ultrawork」理念挂到 **DeepSeek Harness (DSH)** 上。复用 DSH 原生 `tool-subagent` / `tool-todo` / `tool-goal` / `tool-str-replace-editor` / cordis patch 机制，**不重造**编排引擎。
 
-> 本项目不使用 OMO 的任何源代码，仅借鉴其架构理念（MIT）。OMO 原生不支持 DeepSeek Harness 作为宿主，故本项目独立实现。
+> 本项目不使用 OMO 的任何源代码，仅借鉴其架构理念（CC0-1.0 公有领域）。OMO 原生不支持 DeepSeek Harness 作为宿主，故本项目独立实现。
 
 ## 为什么 DSH 能接近原生复刻 OMO
 
@@ -20,12 +20,12 @@ omo-deepseek-harness 只需把这些原生能力**按 OMO 的 11 角色语义 + 
 
 | 文件 | 作用 |
 |------|------|
-| `ultrawork-trigger.md` | **PoC 入口**。粘贴进 DSH 会话即触发 Sisyphus + ultrawork 协议 |
+| `ultrawork-trigger.md` | **免安装入口**。粘贴进 DSH 会话即触发 Sisyphus + ultrawork 协议 |
 | `AGENTS.md` | Sisyphus 提示词（自动注入版）。复制为 `~/.dsh/AGENTS.md` 后热加载生效 |
 | `category-model-map.yaml` | category → 模型路由（deepseek-v4-flash） |
 | `cordis.patch.yml` | 可选 cordis patch（预注册 OMO 角色 subagent 工具，schema 已校准，重启 dsh 生效） |
 
-## PoC 快速开始
+## 快速开始
 
 前置：DSH 已装（`DSH_HOME=~/.dsh`）；默认 agent 模型为 `deepseek-v4-flash`（`~/.dsh/settings.yaml` 的 `agent-default-model`）；`~/.dsh/cordis.patch.yml` 已启用 `tool-fs` / `tool-fs-search` / `tool-str-replace-editor` / `tool-todo` / `tool-goal` / `tool-subagent` 等核心工具。
 
@@ -47,7 +47,7 @@ export NODE_OPTIONS=
 DSH=<dsh 可执行路径>   # which dsh 定位
 
 # headless：答一个任务，打印 final assistant message，退出
-"$DSH" --profile headless "你的任务（含 Sisyphus 提示词，见 examples/dsh-poc-prompt.txt）"
+"$DSH" --profile headless "你的任务（含 Sisyphus 提示词）"
 ```
 
 ### 方式三：自动注入（一次性配置，长期生效）
@@ -61,26 +61,6 @@ cp adapters/dsh/AGENTS.md ~/.dsh/AGENTS.md
 #    重启 dsh web 后生效：模型将多出 subagent_hephaestus / subagent_explore /
 #    subagent_oracle 三个委派工具，设置 → 插件列表可见三个 active 条目。
 ```
-
-## 端到端 PoC 实测结果（真实 DSH runtime）
-
-三轮 headless 端到端验证（v1 → v2 → v2.1），完整诊断见 `examples/dsh-poc-result.md` / `dsh-poc-v2-result.md`：
-
-### v1（长 prompt + subagent 委派）：卡在模型 tool call 退化
-- ✅ dsh 真实启动 agent + ultrawork 四阶段触发 + `tool-todo` 续跑 + `glob` 真调用
-- ❌ Step4 退化：长 prompt（~8.8k tokens）下模型把 tool call 写成文本（`stopReason=stop` 非 `toolUse`）
-
-### v2（精简 prompt + 单 agent 直接执行）：文件创建闭环
-- ✅ **39 step 无 tool call 退化**（精简 prompt ~400 字解决 v1 根因）
-- ✅ `tool-fs` 真创建 3 文件（package.json / src/index.js / tests/index.test.js，内容正确）
-- ✅ `tool-todo` 续跑 + **不完成不停止契约真实执行**（模型遇问题 19 次重试没放弃）
-- ⚠️ 命令执行被环境阻塞（缺 PowerShell 7，见 v2.1 修复）
-
-### v2.1（装 PowerShell 7）：端到端闭环达成
-- ✅ 根因修复：`tool-pwsh` 契约需要 `pwsh`（PowerShell 7），本机只有 5.1 → 装 7.6.5 便携版
-- ✅ **37 step 无退化**（inputTokens 23k+），文件 + 运行 + 测试全绿
-- ✅ `node src/index.js` → `Hello, World!`；非 spawn 测试 `Test PASSED`；todo 4/4
-- ✅ agent 诚实报告 sandbox 限制（未编造测试通过）
 
 ## 诚实声明：OMO 特性在 DSH 的降级
 
@@ -99,6 +79,6 @@ cp adapters/dsh/AGENTS.md ~/.dsh/AGENTS.md
 
 ## 已知问题（诚实记录）
 
-1. **模型 tool call 退化是概率性的**：qwen 系本地模型在 ~9k+ tokens 上下文有退化概率（长 prompt / 多轮后把 tool call 写成文本）。deepseek-v4-flash 云端模型未见此问题（v2.1 实测 23k+ tokens 无退化）。任务仍建议精简 prompt、控制上下文增长。
+1. **模型 tool call 退化是概率性的**：qwen 系本地模型在 ~9k+ tokens 上下文有退化概率（长 prompt / 多轮后把 tool call 写成文本）。deepseek-v4-flash 云端模型在长上下文实测未见此问题。任务仍建议精简 prompt、控制上下文增长。
 2. **subagent 角色实例仅在「重启后」挂载**：`cordis.patch.yml` 是启动时装载的，新增的 `omo-subagent-*` 工具行需要重启 dsh web 才出现在模型工具列表；`AGENTS.md` 则热加载即时生效。
 3. **其余角色未实例化**：prometheus / atlas / metis / momus / librarian / multimodal-looker / sisyphus-junior 尚未按 `core/agents.yaml` 批量补齐（模式已打通，按需追加即可）。
