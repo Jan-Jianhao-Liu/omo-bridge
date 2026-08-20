@@ -1,4 +1,9 @@
-# omo-deepseek-harness Benchmark — ultrawork 编排效果对照
+# omo-deepseek-harness Benchmark
+
+- **[v2（推荐阅读）](./v2/README.md)** — 同一软件设计方案施工对照（MiniMarkdown 转换器），对产物用成熟基准评估（隐藏验收套件 / 覆盖率 / 性能 / 成本受控）。**v1 因任务过于简单、成功率饱和而无法区分，v2 为有效实验。**
+- [v1（历史）](./README.md) — 简单玩具任务对照（成功率饱和，仅作存档）。
+
+## v1 原始实验（存档）
 
 **日期**：2026-08-20 · **模型**：deepseek-v4-flash（provider deepseek-official）· **每组 3 次运行** · **任务成功与否由父代理独立重跑验证（非子代理自述）**
 
