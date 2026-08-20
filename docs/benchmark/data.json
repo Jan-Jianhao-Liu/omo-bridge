@@ -1,0 +1,18 @@
+{
+  "task": "在独立目录创建 Node.js 项目：实现 sumUniqueFlatten（扁平化+去重+求和），写 >=4 个 node:test 用例，npm test 跑到全绿",
+  "model": "deepseek-v4-flash",
+  "provider": "deepseek-official",
+  "runs_per_group": 3,
+  "success_verification": "父代理独立重跑 node --test，退出码 0 + 产物齐全",
+  "control": [
+    { "run": "control-1", "steps": 6, "toolCalls": 7, "failedToolCalls": 0, "inputTokens": 8752, "outputTokens": 3195, "cacheReadTokens": 92928, "reasoningTokens": 1247, "wallMs": 24900, "success": true },
+    { "run": "control-2", "steps": 5, "toolCalls": 6, "failedToolCalls": 0, "inputTokens": 8436, "outputTokens": 2420, "cacheReadTokens": 73472, "reasoningTokens": 994, "wallMs": 19600, "success": true },
+    { "run": "control-3", "steps": 5, "toolCalls": 6, "failedToolCalls": 0, "inputTokens": 8537, "outputTokens": 2500, "cacheReadTokens": 73984, "reasoningTokens": 1186, "wallMs": 21600, "success": true }
+  ],
+  "omo": [
+    { "run": "omo-1", "steps": 8, "toolCalls": 11, "failedToolCalls": 0, "inputTokens": 8901, "outputTokens": 5351, "cacheReadTokens": 137216, "reasoningTokens": 2278, "wallMs": 40300, "success": true },
+    { "run": "omo-2", "steps": 6, "toolCalls": 11, "failedToolCalls": 0, "inputTokens": 10073, "outputTokens": 4750, "cacheReadTokens": 97792, "reasoningTokens": 1817, "wallMs": 35300, "success": true },
+    { "run": "omo-3", "steps": 7, "toolCalls": 11, "failedToolCalls": 0, "inputTokens": 9027, "outputTokens": 4926, "cacheReadTokens": 115840, "reasoningTokens": 1820, "wallMs": 34600, "success": true }
+  ],
+  "cost_assumption": { "input_per_m": 0.27, "cache_read_per_m": 0.07, "output_per_m": 1.1, "note": "DeepSeek 公开参考价，v4-flash 实际定价未公开，估算用" }
+}
