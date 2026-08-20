@@ -1,0 +1,19 @@
+{
+  "task": "MiniMarkdown：按同一份设计规格书实现 Markdown→HTML 转换器（库+CLI），12 类语法、5 字符转义防 XSS、6 类边界、自测>=10、CLI 错误路径",
+  "spec": "docs/benchmark/v2/spec.md",
+  "model": "deepseek-v4-flash",
+  "provider": "deepseek-official",
+  "runs_per_group": 3,
+  "product_eval": "父代理独立执行隐藏验收套件(23 用例含 4 安全项) + 行覆盖率(node --experimental-test-coverage) + 300KB 性能 + 结构度量",
+  "control": [
+    { "run": "control-1", "hiddenPass": 23, "hiddenTotal": 23, "coverage": 98.31, "perfMs": 30.8, "loc": 237, "ownTests": 24, "steps": 12, "toolCalls": 14, "failedToolCalls": 0, "inputTokens": 13953, "outputTokens": 25388, "cacheReadTokens": 412200, "reasoningTokens": 17763, "wallMs": 191100, "cost": 0.0605 },
+    { "run": "control-2", "hiddenPass": 23, "hiddenTotal": 23, "coverage": 92.98, "perfMs": 57.0, "loc": 243, "ownTests": 21, "steps": 17, "toolCalls": 16, "failedToolCalls": 0, "inputTokens": 5003, "outputTokens": 16372, "cacheReadTokens": 465000, "reasoningTokens": 8290, "wallMs": 119000, "cost": 0.0519 },
+    { "run": "control-3", "hiddenPass": 23, "hiddenTotal": 23, "coverage": 97.31, "perfMs": 21.9, "loc": 224, "ownTests": 23, "steps": 22, "toolCalls": 23, "failedToolCalls": 0, "inputTokens": 19141, "outputTokens": 28652, "cacheReadTokens": 834900, "reasoningTokens": 19624, "wallMs": 219600, "cost": 0.0951 }
+  ],
+  "omo": [
+    { "run": "omo-1", "hiddenPass": 23, "hiddenTotal": 23, "coverage": 95.42, "perfMs": 33.0, "loc": 307, "ownTests": 23, "steps": 9, "toolCalls": 15, "failedToolCalls": 0, "inputTokens": 7707, "outputTokens": 25735, "cacheReadTokens": 276600, "reasoningTokens": 17045, "wallMs": 175000, "cost": 0.0498 },
+    { "run": "omo-2", "hiddenPass": 23, "hiddenTotal": 23, "coverage": 81.98, "perfMs": 28.2, "loc": 284, "ownTests": 23, "steps": 14, "toolCalls": 17, "failedToolCalls": 0, "inputTokens": 32311, "outputTokens": 40611, "cacheReadTokens": 601200, "reasoningTokens": 31223, "wallMs": 316200, "cost": 0.0955 },
+    { "run": "omo-3", "hiddenPass": 23, "hiddenTotal": 23, "coverage": 96.88, "perfMs": 75.1, "loc": 225, "ownTests": 23, "steps": 7, "toolCalls": 16, "failedToolCalls": 0, "inputTokens": 10629, "outputTokens": 18982, "cacheReadTokens": 198900, "reasoningTokens": 12774, "wallMs": 330400, "cost": 0.0377 }
+  ],
+  "cost_assumption": { "input_per_m": 0.27, "cache_read_per_m": 0.07, "output_per_m": 1.1, "note": "DeepSeek 公开参考价，v4-flash 实际定价未公开，估算用" }
+}
