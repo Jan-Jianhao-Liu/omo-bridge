@@ -120,12 +120,3 @@ express Statement of Purpose.
     party to this document and has no duty or obligation with respect to
     this CC0 or use of the Work.
 
----
-
-NOTE: This project is released into the public domain under CC0 1.0
-Universal — no copyright holder is asserted and no attribution is
-required. It does NOT contain any source code from oh-my-openagent
-(https://github.com/code-yeongyu/oh-my-openagent); it is independently
-implemented, inspired only by its architectural philosophy.
-oh-my-openagent is licensed under the SUL license and all rights to it
-belong to its original author.
