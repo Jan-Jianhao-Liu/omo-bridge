@@ -2,8 +2,7 @@
 #
 # DSH 自动注入增强（可选）：把下面 `- id:` 条目追加进 ~/.dsh/cordis.patch.yml，
 # 并把 adapters/dsh/AGENTS.md 复制为 ~/.dsh/AGENTS.md，DSH 启动时即自动注入
-# Sisyphus 提示词 + 预注册 OMO 角色 subagent 工具
-# （subagent_hephaestus / subagent_explore / subagent_oracle）。
+# Sisyphus 提示词 + 预注册 OMO 角色 subagent 工具（对应 core/agents.yaml 全部角色）。
 #
 # ✅ schema 已按当前 dsh 版本校准（2026-08-20 实测通过）：
 #   - 当前 dsh 的 dsh-agent-instructions 没有 `instructions` 配置字段，
@@ -11,8 +10,8 @@
 #   - dsh-tool-subagent 的 agentOptions 仅支持 provider/model/maxTokens
 #     （无 reasoningEffort 字段）；persona 为内联文本；toolFilter 接受全局工具名；
 #     maxDepth 数字依赖 spawn provider 的 depthLimit 能力（已支持）。
-#   - Oracle 用 toolFilter.allow: [] 实现"无工具"，避免枚举工具名带来的
-#     "unknown names fail startup" 风险。
+#   - 只读/评审角色用 toolFilter.allow: [] 实现"无工具"，检索/视觉角色用
+#     白名单只读工具，避免枚举工具名带来的 "unknown names fail startup" 风险。
 #
 # 生效时机：AGENTS.md 热加载即时生效；subagent 工具行在 dsh web 重启后生效。
 
@@ -63,4 +62,124 @@
     toolFilter:
       allow: []
     maxDepth: 0
+  disabled: false
+
+- id: omo-subagent-prometheus
+  name: '@deepseek-ai/dsh-tool-subagent'
+  config:
+    provider: spawn
+    toolName: subagent_prometheus
+    backgroundMode: one-shot
+    persona: >-
+      你是 Prometheus，omo-deepseek-harness 的战略规划师。访谈式需求分析：
+      先澄清目标、约束与验收标准，再产出经验证、可执行的计划（分步、可验收）。
+      你从不直接写代码——只做规划，计划交给执行者。完成后回 Sisyphus 复验。
+    agentOptions:
+      provider: deepseek-official
+      model: deepseek-v4-flash
+    maxDepth: 0
+  disabled: false
+
+- id: omo-subagent-atlas
+  name: '@deepseek-ai/dsh-tool-subagent'
+  config:
+    provider: spawn
+    toolName: subagent_atlas
+    backgroundMode: continuable
+    persona: >-
+      你是 Atlas，omo-deepseek-harness 的待办执行器。读取计划（Prometheus 产出），
+      按 category 拆解并委派子任务，跨任务追踪 todo，独立验证每项产物。
+      给目标不给步骤，端到端推进不半途而废。完成后回 Sisyphus 复验。
+    agentOptions:
+      provider: deepseek-official
+      model: deepseek-v4-flash
+    maxDepth: 2
+  disabled: false
+
+- id: omo-subagent-metis
+  name: '@deepseek-ai/dsh-tool-subagent'
+  config:
+    provider: spawn
+    toolName: subagent_metis
+    backgroundMode: one-shot
+    persona: >-
+      你是 Metis，omo-deepseek-harness 的计划评审。只读分析计划：检查遗漏、
+      依赖、风险与可执行性，给出具体修订建议。不修改任何文件，不执行命令。
+      你没有任何工具可用。完成后回 Sisyphus 复验。
+    agentOptions:
+      provider: deepseek-official
+      model: deepseek-v4-flash
+    toolFilter:
+      allow: []
+    maxDepth: 0
+  disabled: false
+
+- id: omo-subagent-momus
+  name: '@deepseek-ai/dsh-tool-subagent'
+  config:
+    provider: spawn
+    toolName: subagent_momus
+    backgroundMode: one-shot
+    persona: >-
+      你是 Momus，omo-deepseek-harness 的高精度审查。对计划与产物做严格验证：
+      场景可执行性、边界条件、验收标准逐条核对，只给结论与依据。
+      不修改任何文件，不执行命令。你没有任何工具可用。完成后回 Sisyphus 复验。
+    agentOptions:
+      provider: deepseek-official
+      model: deepseek-v4-flash
+    toolFilter:
+      allow: []
+    maxDepth: 0
+  disabled: false
+
+- id: omo-subagent-librarian
+  name: '@deepseek-ai/dsh-tool-subagent'
+  config:
+    provider: spawn
+    toolName: subagent_librarian
+    backgroundMode: one-shot
+    persona: >-
+      你是 Librarian，omo-deepseek-harness 的检索专家。查库示例、官方文档、
+      远程仓库：只做只读检索（read/glob/grep/web_search/web_fetch），
+      产出带来源的事实清单。不修改文件，不执行命令。完成后回 Sisyphus 复验。
+    agentOptions:
+      provider: deepseek-official
+      model: deepseek-v4-flash
+    toolFilter:
+      allow: [read, glob, grep, web_search, web_fetch]
+    maxDepth: 0
+  disabled: false
+
+- id: omo-subagent-multimodal-looker
+  name: '@deepseek-ai/dsh-tool-subagent'
+  config:
+    provider: spawn
+    toolName: subagent_multimodal_looker
+    backgroundMode: one-shot
+    persona: >-
+      你是 Multimodal Looker，omo-deepseek-harness 的视觉分析。理解截图、图表、
+      PDF、设计稿：只读图片（read_image），描述所见并给出结论。
+      不修改文件，不执行命令。完成后回 Sisyphus 复验。
+    agentOptions:
+      provider: deepseek-official
+      model: deepseek-v4-flash
+    toolFilter:
+      allow: [read_image]
+    maxDepth: 0
+  disabled: false
+
+- id: omo-subagent-sisyphus-junior
+  name: '@deepseek-ai/dsh-tool-subagent'
+  config:
+    provider: spawn
+    toolName: subagent_sisyphus_junior
+    backgroundMode: one-shot
+    persona: >-
+      你是 Sisyphus Junior，omo-deepseek-harness 的轻量编排。处理单文件修改、
+      typo、小重构等简单任务：直接执行或小幅委派，快速闭环，不惊动主 Sisyphus。
+      完成后简要回报。
+    agentOptions:
+      provider: deepseek-official
+      model: deepseek-v4-flash
+    maxDepth: 1
   disabled: false
