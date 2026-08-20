@@ -39,8 +39,9 @@ omo-deepseek-harness/
 │   └── ultrawork.md       # ultrawork プロトコル：4 フェーズ + ToDo 継続 + 完了まで止まらない
 ├── adapters/dsh/          # DeepSeek Harness アダプタ（薄層）
 │   ├── ultrawork-trigger.md      # PoC エントリ：DSH セッションに貼り付け
+│   ├── AGENTS.md                 # Sisyphus プロンプト：~/.dsh/AGENTS.md にコピー（ホットリロード）
 │   ├── category-model-map.yaml   # category → deepseek-v4-flash ルーティング
-│   └── cordis.patch.yml          # 任意：プロンプト自動注入 + サブエージェント実装
+│   └── cordis.patch.yml          # 任意：OMO ロール・サブエージェントツール（スキーマ校正済み）
 ├── examples/              # PoC スクリプトと証跡（analyze-dsh-session.py、3 ラウンド結果）
 └── docs/architecture.md   # 設計判断 + OMO 機能デグラデーションマップ
 ```

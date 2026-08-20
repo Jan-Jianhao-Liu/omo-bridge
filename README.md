@@ -39,8 +39,9 @@ omo-deepseek-harness/
 │   └── ultrawork.md       # ultrawork protocol: 4-phase + todo continuity + never-stop
 ├── adapters/dsh/          # DeepSeek Harness adapter (the thin layer)
 │   ├── ultrawork-trigger.md      # PoC entry: paste into a DSH session
+│   ├── AGENTS.md                 # Sisyphus prompt: copy to ~/.dsh/AGENTS.md (hot-reloads)
 │   ├── category-model-map.yaml   # category → deepseek-v4-flash routing
-│   └── cordis.patch.yml          # optional: auto-inject prompts + subagent instances
+│   └── cordis.patch.yml          # optional: pre-registered OMO subagent tools (schema-calibrated)
 ├── examples/              # PoC scripts + evidence (analyze-dsh-session.py, poc results)
 └── docs/architecture.md   # design decisions + OMO-feature degradation map
 ```
@@ -57,6 +58,17 @@ dsh    # or dsh-web
 # Paste adapters/dsh/ultrawork-trigger.md (between the --- markers) into the session,
 # then say:
 #   ultrawork build a Node.js hello-world project in ./demo, write tests, run them
+```
+
+### Auto-inject (one-time setup, keeps working across sessions)
+
+```bash
+# 1) Sisyphus instructions: copy to DSH's user-global instructions file (hot-reloads)
+cp adapters/dsh/AGENTS.md ~/.dsh/AGENTS.md
+
+# 2) OMO role subagent tools: append the `- id: omo-subagent-*` entries from
+#    adapters/dsh/cordis.patch.yml to ~/.dsh/cordis.patch.yml, then restart dsh web.
+#    You get subagent_hephaestus / subagent_explore / subagent_oracle delegation tools.
 ```
 
 ### Headless (automation / CI)

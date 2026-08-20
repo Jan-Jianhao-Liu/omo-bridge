@@ -39,8 +39,9 @@ omo-deepseek-harness/
 │   └── ultrawork.md       # ultrawork 协议：四阶段 + todo 续跑 + 不完成不停止
 ├── adapters/dsh/          # DeepSeek Harness 适配层（薄层）
 │   ├── ultrawork-trigger.md      # PoC 入口：粘贴进 DSH 会话
+│   ├── AGENTS.md                 # Sisyphus 提示词：复制为 ~/.dsh/AGENTS.md（热加载生效）
 │   ├── category-model-map.yaml   # category → deepseek-v4-flash 路由
-│   └── cordis.patch.yml          # 可选：自动注入提示词 + subagent 实例
+│   └── cordis.patch.yml          # 可选：预注册 OMO 角色 subagent 工具（schema 已校准）
 ├── examples/              # PoC 脚本与证据（analyze-dsh-session.py、三轮结果）
 └── docs/architecture.md   # 设计决策 + OMO 特性降级映射
 ```

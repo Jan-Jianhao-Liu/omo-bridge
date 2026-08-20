@@ -11,7 +11,7 @@ DSH（`@deepseek-ai/deepseek-harness`，开源）已内置：
 - `dsh-tool-todo`(allowParallelInProgress) — todo 持久化（ultrawork 续跑命脉）
 - `dsh-tool-goal` — 目标持久化
 - `dsh-tool-ralph` — Ralph Loop（OMO 同源概念）
-- `dsh-persona` / `dsh-agent-instructions` — agent 角色提示词注入
+- `dsh-persona` / `dsh-agent-instructions` — agent 角色提示词注入（AGENTS.md 发现机制）
 - `dsh-plan-mode` / `dsh-workflow` — 规划与工作流
 
 omo-deepseek-harness 只需把这些原生能力**按 OMO 的 11 角色语义 + 5 类别路由组织起来**。
@@ -21,8 +21,9 @@ omo-deepseek-harness 只需把这些原生能力**按 OMO 的 11 角色语义 + 
 | 文件 | 作用 |
 |------|------|
 | `ultrawork-trigger.md` | **PoC 入口**。粘贴进 DSH 会话即触发 Sisyphus + ultrawork 协议 |
+| `AGENTS.md` | Sisyphus 提示词（自动注入版）。复制为 `~/.dsh/AGENTS.md` 后热加载生效 |
 | `category-model-map.yaml` | category → 模型路由（deepseek-v4-flash） |
-| `cordis.patch.yml` | 可选 cordis patch（自动注入提示词 + subagent 实例，schema 待校准） |
+| `cordis.patch.yml` | 可选 cordis patch（预注册 OMO 角色 subagent 工具，schema 已校准，重启 dsh 生效） |
 
 ## PoC 快速开始
 
@@ -47,6 +48,18 @@ DSH=<dsh 可执行路径>   # which dsh 定位
 
 # headless：答一个任务，打印 final assistant message，退出
 "$DSH" --profile headless "你的任务（含 Sisyphus 提示词，见 examples/dsh-poc-prompt.txt）"
+```
+
+### 方式三：自动注入（一次性配置，长期生效）
+
+```bash
+# 1) Sisyphus 提示词：复制为 DSH 用户全局指令文件（热加载，立即生效）
+cp adapters/dsh/AGENTS.md ~/.dsh/AGENTS.md
+
+# 2) OMO 角色 subagent 工具：把 adapters/dsh/cordis.patch.yml 里的
+#    `- id: omo-subagent-*` 条目追加进 ~/.dsh/cordis.patch.yml
+#    重启 dsh web 后生效：模型将多出 subagent_hephaestus / subagent_explore /
+#    subagent_oracle 三个委派工具，设置 → 插件列表可见三个 active 条目。
 ```
 
 ## 端到端 PoC 实测结果（真实 DSH runtime）
@@ -74,7 +87,7 @@ DSH=<dsh 可执行路径>   # which dsh 定位
 | OMO 原生特性 | DSH 状态 | 说明 |
 |--------------|----------|------|
 | 54+ 生命周期 hooks | ❌ 无 | ultrawork 降级为「提示词驱动 + tool-todo 续跑」，非 hook 自动触发 |
-| 11 纪律 Agent | 🔨 部分 | PoC 跑通 Sisyphus(主)；subagent 多 agent 实例化待 schema 校准 |
+| 11 纪律 Agent | 🔨 部分 | Sisyphus(主) 已跑通；Hephaestus / Explore / Oracle 子 agent 实例已按当前 dsh schema 校准（2026-08-20） |
 | Hashline（内容哈希验证编辑） | 🔨 降级 | 用 `tool-str-replace-editor` 前后读校验替代 |
 | Team Mode（tmux 多 agent 可视化） | ❌ 无 | DSH 无 tmux 集成；多 agent 靠 `tool-subagent` 后台 |
 | ultrawork 不完成不停止 | ✅ 等价 | 靠 Sisyphus 提示词 + `tool-todo` 续跑 + `backgroundMode: continuable` |
@@ -82,9 +95,10 @@ DSH=<dsh 可执行路径>   # which dsh 定位
 
 ## 模型
 
-默认 agent 模型：**`deepseek-v4-flash`**（provider `deepseek-official`，`reasoningEffort: high`，支持 tools 调用）。类别路由见 `category-model-map.yaml`。
+默认 agent 模型：**`deepseek-v4-flash`**（provider `deepseek-official`，支持 tools 调用）。类别路由见 `category-model-map.yaml`。
 
 ## 已知问题（诚实记录）
 
 1. **模型 tool call 退化是概率性的**：qwen 系本地模型在 ~9k+ tokens 上下文有退化概率（长 prompt / 多轮后把 tool call 写成文本）。deepseek-v4-flash 云端模型未见此问题（v2.1 实测 23k+ tokens 无退化）。任务仍建议精简 prompt、控制上下文增长。
-2. **cordis.patch 的 persona / agentOptions 字段 schema 未完全校准**：subagent 多 agent 实例化（Sisyphus spawn Hephaestus 等）尚未在 headless 闭环验证。
+2. **subagent 角色实例仅在「重启后」挂载**：`cordis.patch.yml` 是启动时装载的，新增的 `omo-subagent-*` 工具行需要重启 dsh web 才出现在模型工具列表；`AGENTS.md` 则热加载即时生效。
+3. **其余角色未实例化**：prometheus / atlas / metis / momus / librarian / multimodal-looker / sisyphus-junior 尚未按 `core/agents.yaml` 批量补齐（模式已打通，按需追加即可）。

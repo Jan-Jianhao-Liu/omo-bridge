@@ -1,34 +1,20 @@
 # omo-deepseek-harness / adapters / dsh / cordis.patch.yml
 #
-# 可选的 cordis patch 片段。把下面 `- id:` 条目追加进 ~/.dsh/cordis.patch.yml，
-# 可让 DSH 在启动时自动注入 Sisyphus 系统提示词（agent-instructions）+ 预注册
-# OMO 角色的 subagent 实例（deepseek-v4-flash）。
+# DSH 自动注入增强（可选）：把下面 `- id:` 条目追加进 ~/.dsh/cordis.patch.yml，
+# 并把 adapters/dsh/AGENTS.md 复制为 ~/.dsh/AGENTS.md，DSH 启动时即自动注入
+# Sisyphus 提示词 + 预注册 OMO 角色 subagent 工具
+# （subagent_hephaestus / subagent_explore / subagent_oracle）。
 #
-# ⚠️ schema 校准状态：
-#   - agent-instructions 的 config.instructions 字段：基于插件名推断，PoC 时若 dsh 报
-#     「unknown config field」则改为读外部 md 文件的方式（或在会话里粘贴 ultrawork-trigger.md）。
-#   - tool-subagent 的 persona / agentOptions.model 字段：从 dsh-tool-subagent/lib/types
-#     的 Config 接口确认存在，但 persona 是「内联文本」还是「persona 名引用」未完全确定。
+# ✅ schema 已按当前 dsh 版本校准（2026-08-20 实测通过）：
+#   - 当前 dsh 的 dsh-agent-instructions 没有 `instructions` 配置字段，
+#     Sisyphus 提示词改由 $DSH_HOME/AGENTS.md 注入（AGENTS.md 发现机制）。
+#   - dsh-tool-subagent 的 agentOptions 仅支持 provider/model/maxTokens
+#     （无 reasoningEffort 字段）；persona 为内联文本；toolFilter 接受全局工具名；
+#     maxDepth 数字依赖 spawn provider 的 depthLimit 能力（已支持）。
+#   - Oracle 用 toolFilter.allow: [] 实现"无工具"，避免枚举工具名带来的
+#     "unknown names fail startup" 风险。
 #
-# PoC 不依赖本文件——直接在 DSH 会话粘贴 adapters/dsh/ultrawork-trigger.md 即可触发
-# Sisyphus 行为。本文件是「自动注入」增强。
-
-# ---- Sisyphus 主 agent 系统提示词注入 ----
-- id: agent-instructions
-  name: '@deepseek-ai/dsh-agent-instructions'
-  config:
-    maxBytes: 65536
-    # 期望把 core/prompts/sisyphus.md 内容注入此处；若 dsh 要求文件路径，
-    # 改用 instructionsFile: ./core/prompts/sisyphus.md
-    instructions: |
-      你是 Sisyphus，omo-deepseek-harness 主编排器。见 core/ultrawork.md 协议。
-      ultrawork 四阶段：Intent Gate → Codebase Assessment → Smart Delegation（按 category）→ Independent Verification。
-      用 tool-todo 续跑、tool-goal 持久、tool-subagent 委派。不完成不停止。
-  disabled: false
-
-# ---- OMO 角色 subagent 实例（需 PoC 校准 persona schema）----
-# 每个 agent 一个 tool-subagent 实例，绑 persona + agentOptions.model + toolFilter。
-# 单模型池：全部走 deepseek-v4-flash，类别差异靠 reasoning_effort 与 toolFilter。
+# 生效时机：AGENTS.md 热加载即时生效；subagent 工具行在 dsh web 重启后生效。
 
 - id: omo-subagent-hephaestus
   name: '@deepseek-ai/dsh-tool-subagent'
@@ -36,11 +22,14 @@
     provider: spawn
     toolName: subagent_hephaestus
     backgroundMode: continuable
-    persona: 'omo:hephaestus'          # 引用 persona 名（待校准：可能需内联文本）
+    persona: >-
+      你是 Hephaestus，omo-deepseek-harness 的自主深度工人。给目标不给步骤：
+      EXPLORE 先摸清地形（grep/glob/读关键文件）→ PLAN 在 todo 写下可验收计划 →
+      DECIDE 选一条主线不反复 → EXECUTE 精准实现 → VERIFY 跑测试并贴真实输出。
+      不中途求助，陌生模式先自查再上报。完成后回 Sisyphus 复验。
     agentOptions:
       provider: deepseek-official
       model: deepseek-v4-flash
-      reasoningEffort: high
     maxDepth: 2
   disabled: false
 
@@ -50,11 +39,12 @@
     provider: spawn
     toolName: subagent_explore
     backgroundMode: one-shot
-    persona: 'omo:explore'
+    persona: >-
+      你是 Explore，omo-deepseek-harness 的代码侦察 agent。只做只读探查：
+      grep / glob / 读关键文件，产出架构地图与事实清单。不修改任何文件，不执行命令。
     agentOptions:
       provider: deepseek-official
       model: deepseek-v4-flash
-      reasoningEffort: medium
     maxDepth: 1
   disabled: false
 
@@ -64,15 +54,13 @@
     provider: spawn
     toolName: subagent_oracle
     backgroundMode: one-shot
-    persona: 'omo:oracle'
+    persona: >-
+      你是 Oracle，omo-deepseek-harness 的只读分析 agent。对架构决策、疑难 bug
+      做静态分析，不修改文件、不执行命令，给出结论与依据。你没有任何工具可用。
     agentOptions:
       provider: deepseek-official
       model: deepseek-v4-flash
-      reasoningEffort: high
     toolFilter:
-      deny: [tool-fs, tool-str-replace-editor, tool-pwsh, tool-jobs]
-    maxDepth: 0                       # Oracle 不再委派
+      allow: []
+    maxDepth: 0
   disabled: false
-
-# 其余角色（prometheus / atlas / metis / momus / librarian / multimodal-looker /
-# sisyphus-junior）按同模式追加，PoC 验证 schema 后批量补全。
