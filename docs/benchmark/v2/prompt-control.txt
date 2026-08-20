@@ -1,0 +1,9 @@
+# v2 对照组 prompt（无 omo 协议）— 复现用
+
+你是软件工程师 agent。按下面的软件设计规格书，在指定工作目录内**完整施工**并验证。
+
+[规格书内容与 docs/benchmark/v2/spec.md 一致，原样内嵌于 prompt]
+
+工作目录：H:\Code\omo-bench-v2\control-{1|2|3}
+
+条件差异说明：对照组无任何 ultrawork/编排协议注入；处理组（prompt-omo.txt）在任务前注入 Sisyphus 四阶段协议。其余内容（规格书文本、约束、报告要求）逐字相同。
