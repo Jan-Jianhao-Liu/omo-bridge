@@ -2,8 +2,6 @@
   <img src="https://cdn.jsdelivr.net/gh/Jan-Jianhao-Liu/Jan-Jianhao-Liu.github.io/assets/waifu_omo_banner.jpg" width="100%" alt="omo-deepseek-harness · 命运塔楼大法师圣女" />
 </p>
 
-命令我已下达——键入 `ultrawork`。在任务完成之前，这座塔楼的符环永不停止转动。
-
 ---
 
 <div align="center">
