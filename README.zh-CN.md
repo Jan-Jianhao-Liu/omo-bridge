@@ -53,6 +53,49 @@ omo-deepseek-harness/
 └── docs/architecture.md   # 设计决策 + OMO 特性降级映射
 ```
 
+## 实验基准 · Benchmarks
+
+在 **DeepSeek Harness** 上做的受控实验：同一份软件设计规格书（Markdown→HTML 转换器），由 control（无 omo）与 omo（ultrawork 四阶段）两组 Agent 各自施工。成功与否由父代理**独立执行隐藏验收套件 + 覆盖率 + 性能实测**判定，而非子代理自述。模型 `deepseek-v4-flash`，每组 3 次运行。
+
+### 核心对比（中位数）
+
+| 维度 | control | omo | 差异 |
+|---|---|---|---|
+| **产物 · 隐藏验收套件 (23)** | 23/23 ✅ | 23/23 ✅ | 无差异 |
+| **产物 · 行覆盖率** | 97.3% | 95.4% | −1.9pp |
+| **产物 · 300KB 耗时** | 30.8ms | 33.0ms | 持平 |
+| 产物 · 实现代码量 | 237 loc | 284 loc | +20% |
+| **过程 · 施工步骤** | 17 | 9 | **−47%** |
+| **过程 · 估算成本** | $0.060 | $0.050 | **−18%** |
+| **过程 · 施工耗时** | 191s | 316s | **+65%** |
+| 过程 · 总 token / 推理 token | 39.3k / 17.8k | 33.4k / 17.0k | 持平 |
+
+### 图表
+
+![隐藏验收](docs/benchmark/v2/charts/隐藏验收通过数-23.svg)
+![行覆盖率](docs/benchmark/v2/charts/行覆盖率.svg)
+![300KB 耗时](docs/benchmark/v2/charts/300KB-转换耗时-ms.svg)
+![实现代码量](docs/benchmark/v2/charts/实现代码量-loc.svg)
+![步骤数](docs/benchmark/v2/charts/步骤数.svg)
+![总 token](docs/benchmark/v2/charts/总-token-输入-输出.svg)
+![推理 token](docs/benchmark/v2/charts/推理-token.svg)
+![施工耗时](docs/benchmark/v2/charts/施工耗时-秒.svg)
+![估算成本](docs/benchmark/v2/charts/估算成本-美元.svg)
+
+### 结论
+
+- **产物质量两组无差异**：都交付了符合规格、**23/23 通过（含 4 项 XSS 转义安全项）**的软件——规格清晰时，有没有 omo 不影响最终软件的正确性。
+- **omo 的价值体现在过程**：**步骤 −47%、估算成本 −18%**（规划先行 ⇒ 零散的返工式小步骤大幅减少；步骤少 ⇒ 缓存重读少）。代价是**耗时 +65%**（每步规划/验证想得更多），token 基本持平。
+- **复杂度拐点**：简单任务（v1）omo 是纯开销；复杂任务（v2）omo 转为**效率项**——印证「收益随任务复杂度上升」。
+
+### 建议
+
+- **复杂、多步、易返工的施工任务** → 启用 omo（规划先行 + 独立验证，实测步骤更少、成本更低）。
+- **超简单、单步任务** → 不用 omo，直接用 DSH（v1 已证纯开销）。
+- **追求最短耗时** → 不用 omo；**追求低成本 + 稳定质量 + 文档纪律** → 启用 omo。
+- omo 强制的**第四阶段独立验证**是防遗漏/防幻觉的核心，复杂改动建议保留。
+- 局限：n=3、单任务、单模型，属方向性结论；显著性与幅度需更大样本复测。完整数据与复现见 [`docs/benchmark`](docs/benchmark)。
+
 ## 快速开始（DSH）
 
 前置：已装 DSH（`DSH_HOME=~/.dsh`），默认 agent 模型 `deepseek-v4-flash`，`~/.dsh/cordis.patch.yml` 已启用核心工具（`tool-fs` / `tool-todo` / `tool-subagent` ...）。
