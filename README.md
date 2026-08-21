@@ -59,6 +59,49 @@ omo-deepseek-harness/
 └── docs/architecture.md   # design decisions + OMO-feature degradation map
 ```
 
+## Benchmarks
+
+Controlled experiment on **DeepSeek Harness**: the same software spec (a Markdown→HTML converter) built by control (no omo) vs omo (ultrawork 4-phase) agents. Success is judged by an **independent hidden acceptance suite + coverage + measured performance** run by the parent agent — not by what the sub-agent claims. Model: `deepseek-v4-flash`, 3 runs per group.
+
+### Core comparison (median)
+
+| Dimension | control | omo | Δ |
+|---|---|---|---|
+| **Product · hidden acceptance (23)** | 23/23 ✅ | 23/23 ✅ | no diff |
+| **Product · line coverage** | 97.3% | 95.4% | −1.9pp |
+| **Product · 300KB perf** | 30.8ms | 33.0ms | ≈ |
+| Product · implementation LOC | 237 | 284 | +20% |
+| **Process · steps** | 17 | 9 | **−47%** |
+| **Process · est. cost** | $0.060 | $0.050 | **−18%** |
+| **Process · build time** | 191s | 316s | **+65%** |
+| Process · total / reasoning tokens | 39.3k / 17.8k | 33.4k / 17.0k | ≈ |
+
+### Charts
+
+![hidden acceptance](docs/benchmark/v2/charts/隐藏验收通过数-23.svg)
+![coverage](docs/benchmark/v2/charts/行覆盖率.svg)
+![perf](docs/benchmark/v2/charts/300KB-转换耗时-ms.svg)
+![LOC](docs/benchmark/v2/charts/实现代码量-loc.svg)
+![steps](docs/benchmark/v2/charts/步骤数.svg)
+![tokens](docs/benchmark/v2/charts/总-token-输入-输出.svg)
+![reasoning](docs/benchmark/v2/charts/推理-token.svg)
+![build time](docs/benchmark/v2/charts/施工耗时-秒.svg)
+![cost](docs/benchmark/v2/charts/估算成本-美元.svg)
+
+### Conclusion
+
+- **Output quality is identical**: both groups ship spec-compliant software passing **23/23 (incl. 4 XSS-escaping checks)** — with a clear spec, omo does not change output correctness.
+- **omo earns its keep in the process**: **steps −47%, est. cost −18%** (plan-first ⇒ far fewer fix-it-up rework micro-steps; fewer steps ⇒ less cache re-read). Cost: **+65% build time** (more planning/verification per step); tokens roughly even.
+- **Complexity inflection**: on trivial tasks (v1) omo is pure overhead; on complex tasks (v2) it flips to an efficiency win — consistent with "value grows with task complexity".
+
+### Recommendations
+
+- **Complex, multi-step, rework-prone builds** → enable omo (plan-first + independent verification; measurably fewer rework steps, lower cost).
+- **Trivial single-step tasks** → skip omo, plain DSH (v1 showed it is pure overhead).
+- **Minimize wall-clock** → skip omo; **minimize cost + want stable quality & discipline** → enable omo.
+- omo's enforced **4th-phase independent verification** is its core guard against cargo-cult/leaky work — keep it for complex edits.
+- Limitation: n=3, one task, one model — directional not conclusive; re-run on a larger sample for significance. Full data & reproducibility in [`docs/benchmark`](docs/benchmark).
+
 ## Quick Start (DSH)
 
 Prereqs: DSH installed (`DSH_HOME=~/.dsh`), default agent model `deepseek-v4-flash`, core tools enabled in `~/.dsh/cordis.patch.yml` (`tool-fs`, `tool-todo`, `tool-subagent`, ...).
