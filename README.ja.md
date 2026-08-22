@@ -4,7 +4,7 @@
 
 **oh-my-openagent（OMO）のディシプリン・エージェント編成を DeepSeek Harness へ。**
 
-[English](README.md) · [简体中文](README.zh-CN.md) · [日本語](README.ja.md)
+[简体中文](README.md) · [English](README.en.md) · [日本語](README.ja.md)
 
 </div>
 
@@ -72,15 +72,15 @@ omo-deepseek-harness/
 
 ### チャート
 
-![隠し受け入れ](docs/benchmark/v2/charts/隐藏验收通过数-23.svg)
-![行カバレッジ](docs/benchmark/v2/charts/行覆盖率.svg)
-![300KB 処理](docs/benchmark/v2/charts/300KB-转换耗时-ms.svg)
-![実装 LOC](docs/benchmark/v2/charts/实现代码量-loc.svg)
-![ステップ数](docs/benchmark/v2/charts/步骤数.svg)
-![総トークン](docs/benchmark/v2/charts/总-token-输入-输出.svg)
-![推論トークン](docs/benchmark/v2/charts/推理-token.svg)
-![施工時間](docs/benchmark/v2/charts/施工耗时-秒.svg)
-![推定コスト](docs/benchmark/v2/charts/估算成本-美元.svg)
+![隠し受け入れ](docs/benchmark/v2/charts/ja/隐藏验收通过数-23.svg)
+![行カバレッジ](docs/benchmark/v2/charts/ja/行覆盖率.svg)
+![300KB 処理](docs/benchmark/v2/charts/ja/300KB-转换耗时-ms.svg)
+![実装 LOC](docs/benchmark/v2/charts/ja/实现代码量-loc.svg)
+![ステップ数](docs/benchmark/v2/charts/ja/步骤数.svg)
+![総トークン](docs/benchmark/v2/charts/ja/总-token-输入-输出.svg)
+![推論トークン](docs/benchmark/v2/charts/ja/推理-token.svg)
+![施工時間](docs/benchmark/v2/charts/ja/施工耗时-秒.svg)
+![推定コスト](docs/benchmark/v2/charts/ja/估算成本-美元.svg)
 
 ### 結論
 
