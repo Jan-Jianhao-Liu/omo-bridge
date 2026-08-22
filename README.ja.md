@@ -81,9 +81,9 @@ omo-deepseek-harness/
 
 ### チャート
 
-![ステップ数](docs/benchmark/v2/charts/ja/步骤数.svg)
-![施工時間](docs/benchmark/v2/charts/ja/施工耗时-秒.svg)
-![推定コスト](docs/benchmark/v2/charts/ja/估算成本-美元.svg)
+![ステップ数](https://testingcf.jsdelivr.net/gh/Jan-Jianhao-Liu/Jan-Jianhao-Liu.github.io/assets/benchmark/ja/steps.svg)
+![施工時間](https://testingcf.jsdelivr.net/gh/Jan-Jianhao-Liu/Jan-Jianhao-Liu.github.io/assets/benchmark/ja/buildtime.svg)
+![推定コスト](https://testingcf.jsdelivr.net/gh/Jan-Jianhao-Liu/Jan-Jianhao-Liu.github.io/assets/benchmark/ja/cost.svg)
 
 ### 結論
 
