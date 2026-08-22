@@ -63,6 +63,8 @@ omo-deepseek-harness/
 
 在 **DeepSeek Harness** 上做的受控实验：同一份软件设计规格书（Markdown→HTML 转换器），由 control（无 omo）与 omo（ultrawork 四阶段）两组 Agent 各自施工。成功与否由父代理**独立执行隐藏验收套件 + 覆盖率 + 性能实测**判定，而非子代理自述。模型 `deepseek-v4-flash`，每组 3 次运行。
 
+> > 每组独立执行 3 次运行（run1–run3），图中每根柱为该 run 的实测值。
+
 ### 核心对比（中位数）
 
 | 维度 | control | omo | 差异 |
@@ -78,13 +80,7 @@ omo-deepseek-harness/
 
 ### 图表
 
-![隐藏验收](docs/benchmark/v2/charts/隐藏验收通过数-23.svg)
-![行覆盖率](docs/benchmark/v2/charts/行覆盖率.svg)
-![300KB 耗时](docs/benchmark/v2/charts/300KB-转换耗时-ms.svg)
-![实现代码量](docs/benchmark/v2/charts/实现代码量-loc.svg)
 ![步骤数](docs/benchmark/v2/charts/步骤数.svg)
-![总 token](docs/benchmark/v2/charts/总-token-输入-输出.svg)
-![推理 token](docs/benchmark/v2/charts/推理-token.svg)
 ![施工耗时](docs/benchmark/v2/charts/施工耗时-秒.svg)
 ![估算成本](docs/benchmark/v2/charts/估算成本-美元.svg)
 
