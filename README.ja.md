@@ -1,3 +1,9 @@
+<p align="center">
+  <img src="https://cdn.jsdelivr.net/gh/Jan-Jianhao-Liu/Jan-Jianhao-Liu.github.io/assets/waifu_omo_banner.jpg" width="100%" alt="omo-deepseek-harness · 命运塔楼大法师圣女" />
+</p>
+
+---
+
 <div align="center">
 
 # omo-deepseek-harness
