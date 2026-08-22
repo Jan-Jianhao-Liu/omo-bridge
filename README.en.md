@@ -78,13 +78,7 @@ Controlled experiment on **DeepSeek Harness**: the same software spec (a Markdow
 
 ### Charts
 
-![hidden acceptance](docs/benchmark/v2/charts/en/隐藏验收通过数-23.svg)
-![coverage](docs/benchmark/v2/charts/en/行覆盖率.svg)
-![perf](docs/benchmark/v2/charts/en/300KB-转换耗时-ms.svg)
-![LOC](docs/benchmark/v2/charts/en/实现代码量-loc.svg)
 ![steps](docs/benchmark/v2/charts/en/步骤数.svg)
-![tokens](docs/benchmark/v2/charts/en/总-token-输入-输出.svg)
-![reasoning](docs/benchmark/v2/charts/en/推理-token.svg)
 ![build time](docs/benchmark/v2/charts/en/施工耗时-秒.svg)
 ![cost](docs/benchmark/v2/charts/en/估算成本-美元.svg)
 
