@@ -63,7 +63,8 @@ omo-deepseek-harness/
 
 在 **DeepSeek Harness** 上做的受控实验：同一份软件设计规格书（Markdown→HTML 转换器），由 control（无 omo）与 omo（ultrawork 四阶段）两组 Agent 各自施工。成功与否由父代理**独立执行隐藏验收套件 + 覆盖率 + 性能实测**判定，而非子代理自述。模型 `deepseek-v4-flash`，每组 3 次运行。
 
-> > 每组独立执行 3 次运行（run1–run3），图中每根柱为该 run 的实测值。
+
+> 每组独立执行 3 次运行（run1–run3），图中每根柱为该 run 的实测值。
 
 ### 核心对比（中位数）
 
