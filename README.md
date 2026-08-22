@@ -1,140 +1,122 @@
-<p align="center">
-  <img src="https://cdn.jsdelivr.net/gh/Jan-Jianhao-Liu/Jan-Jianhao-Liu.github.io/assets/waifu_omo_banner.jpg" width="100%" alt="omo-deepseek-harness · 命运塔楼大法师圣女" />
-</p>
-
----
-
 <div align="center">
 
 # omo-deepseek-harness
 
-**Bring the discipline-agent orchestration of oh-my-openagent (OMO) to DeepSeek Harness.**
+**把 oh-my-openagent（OMO）的纪律型 Agent 编排带到 DeepSeek Harness。**
 
-[English](README.md) · [简体中文](README.zh-CN.md) · [日本語](README.ja.md)
+[简体中文](README.md) · [English](README.en.md) · [日本語](README.ja.md)
 
 </div>
 
-## What is this?
+## 这是什么？
 
-`omo-deepseek-harness` brings the **discipline-agent + multi-model routing + ultrawork** philosophy of [oh-my-openagent](https://github.com/code-yeongyu/oh-my-openagent) (OMO) to [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness) (DSH) — a lightweight, independently-implemented adapter, released to the public domain under **CC0-1.0**.
+`omo-deepseek-harness` 把 [oh-my-openagent](https://github.com/code-yeongyu/oh-my-openagent)（OMO）的 **纪律型 Agent + 多模型路由 + ultrawork** 理念带到 [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness)（DSH）——一个轻量、独立实现的适配层，**CC0-1.0** 公有领域协议。
 
-Type `ultrawork` once. Sisyphus orchestrates: parse intent → assess the codebase → delegate by category → verify independently. It does not stop until done.
+输入一次 `ultrawork`。Sisyphus 开始编排：解析意图 → 摸清代码库 → 按类别委派 → 独立验证。不完成不停止。
 
-## Features
+## 特性
 
-- **One-word trigger** — type `ultrawork` (or `ulw`) and Sisyphus drives the task to completion.
-- **Discipline-agent delegation** — pre-registered role subagents (`subagent_hephaestus`, `subagent_explore`, `subagent_oracle`) on DSH's native `tool-subagent`.
-- **4-phase ultrawork protocol** — intent gate → codebase assessment → smart delegation by category → independent verification.
-- **Never-stop contract** — todo-persisted resumption via `tool-todo` / `tool-goal`; interrupted runs continue from the last checkpoint.
-- **No engine re-invention** — a thin adapter over DSH's native tooling, not a new orchestration runtime.
+- **一词触发** — 输入 `ultrawork`（或 `ulw`），Sisyphus 接管并把任务推进到完成。
+- **纪律 Agent 委派** — 预注册角色子代理（`subagent_hephaestus` / `subagent_explore` / `subagent_oracle`），基于 DSH 原生 `tool-subagent`。
+- **ultrawork 四阶段协议** — 意图门 → 代码库评估 → 按类别智能委派 → 独立验证。
+- **不完成不停止** — 通过 `tool-todo` / `tool-goal` 持久化续跑；中断后从断点继续。
+- **不重造引擎** — 薄适配层复用于 DSH 原生能力，而非新编排运行时。
 
-## Attribution
+## 致敬声明
 
-Inspired by [oh-my-openagent](https://github.com/code-yeongyu/oh-my-openagent) by [code-yeongyu](https://github.com/code-yeongyu), licensed under **SUL**.
+受 [oh-my-openagent](https://github.com/code-yeongyu/oh-my-openagent)（作者 [code-yeongyu](https://github.com/code-yeongyu)，**SUL** 协议）启发。
 
-- This project uses **none** of OMO's source code. It re-implements the architectural *philosophy* (discipline agents / category routing / ultrawork protocol) from scratch.
-- Agent names (Sisyphus, Hephaestus, Prometheus, ...) are used as conceptual homage.
-- For OMO's full capabilities (11 agents + 54 hooks + Hashline + Team Mode), use the original: `bunx oh-my-openagent install` (requires OpenCode as host).
+- 本项目**不使用** OMO 的任何源代码，仅从零重实现其架构*理念*（纪律 Agent / 类别路由 / ultrawork 协议）。
+- Agent 命名（Sisyphus / Hephaestus / Prometheus ...）作为概念致敬沿用。
+- 需要 OMO 完整能力（11 agent + 54 hooks + Hashline + Team Mode）请用原版：`bunx oh-my-openagent install`（需 OpenCode 宿主）。
 
-## Why not just use OMO?
+## 为什么不用 OMO？
 
-**OMO does not natively support DeepSeek Harness.** OMO is an OpenCode plugin whose core value depends on OpenCode's 54+ lifecycle hooks, tool-calling channel, and session/todo persistence — none of which exist as-is in DSH. Porting OMO as-is would effectively be a rewrite, constrained by its SUL license + CLA.
+**OMO 原生不支持 DeepSeek Harness。** OMO 是 OpenCode 插件，其核心价值依赖 OpenCode 的 54+ 生命周期 hooks、工具调用通道、session/todo 持久化——DSH 均无等价物。原样移植 OMO ≈ 重写，且受 SUL + CLA 约束。
 
-This project takes only the *brain* (agent definitions + category routing + ultrawork protocol) into a platform-agnostic `core/`, plus a thin adapter that maps onto DSH's native capabilities (`tool-subagent`, `tool-todo`, `tool-goal`, ...) — **no engine re-invention**.
+本项目只把「大脑」（Agent 定义 + 类别路由 + ultrawork 协议）抽到平台无关的 `core/`，再加一层薄 adapter 映射到 DSH 原生能力（`tool-subagent` / `tool-todo` / `tool-goal` ...）——**不重造引擎**。
 
-## Architecture
+## 架构
 
 ```
 omo-deepseek-harness/
-├── core/                  # Platform-agnostic "brain"
-│   ├── agents.yaml        # 11 discipline agents (role / category / needs_tools / desc)
-│   ├── categories.yaml    # task category → model capability requirements
-│   ├── prompts/           # agent system prompts ({{platform_tools}} placeholders)
-│   └── ultrawork.md       # ultrawork protocol: 4-phase + todo continuity + never-stop
-├── adapters/dsh/          # DeepSeek Harness adapter (the thin layer)
-│   ├── ultrawork-trigger.md      # quick entry: paste into a DSH session to trigger Sisyphus
-│   ├── AGENTS.md                 # Sisyphus prompt: copy to ~/.dsh/AGENTS.md (hot-reloads)
-│   ├── category-model-map.yaml   # category → deepseek-v4-flash routing
-│   └── cordis.patch.yml          # optional: pre-registered OMO subagent tools (schema-calibrated)
-└── docs/architecture.md   # design decisions + OMO-feature degradation map
+├── core/                  # 平台无关的「大脑」
+│   ├── agents.yaml        # 11 纪律 Agent（role / category / needs_tools / desc）
+│   ├── categories.yaml    # 任务类别 → 模型能力要求
+│   ├── prompts/           # agent 系统提示词（{{platform_tools}} 占位）
+│   └── ultrawork.md       # ultrawork 协议：四阶段 + todo 续跑 + 不完成不停止
+├── adapters/dsh/          # DeepSeek Harness 适配层（薄层）
+│   ├── ultrawork-trigger.md      # 快速入口：粘贴进 DSH 会话即触发 Sisyphus
+│   ├── AGENTS.md                 # Sisyphus 提示词：复制为 ~/.dsh/AGENTS.md（热加载生效）
+│   ├── category-model-map.yaml   # category → deepseek-v4-flash 路由
+│   └── cordis.patch.yml          # 可选：预注册 OMO 角色 subagent 工具（schema 已校准）
+└── docs/architecture.md   # 设计决策 + OMO 特性降级映射
 ```
 
-## Benchmarks
+## 实验基准 · Benchmarks
 
-Controlled experiment on **DeepSeek Harness**: the same software spec (a Markdown→HTML converter) built by control (no omo) vs omo (ultrawork 4-phase) agents. Success is judged by an **independent hidden acceptance suite + coverage + measured performance** run by the parent agent — not by what the sub-agent claims. Model: `deepseek-v4-flash`, 3 runs per group.
+在 **DeepSeek Harness** 上做的受控实验：同一份软件设计规格书（Markdown→HTML 转换器），由 control（无 omo）与 omo（ultrawork 四阶段）两组 Agent 各自施工。成功与否由父代理**独立执行隐藏验收套件 + 覆盖率 + 性能实测**判定，而非子代理自述。模型 `deepseek-v4-flash`，每组 3 次运行。
 
-### Core comparison (median)
+### 核心对比（中位数）
 
-| Dimension | control | omo | Δ |
+| 维度 | control | omo | 差异 |
 |---|---|---|---|
-| **Product · hidden acceptance (23)** | 23/23 ✅ | 23/23 ✅ | no diff |
-| **Product · line coverage** | 97.3% | 95.4% | −1.9pp |
-| **Product · 300KB perf** | 30.8ms | 33.0ms | ≈ |
-| Product · implementation LOC | 237 | 284 | +20% |
-| **Process · steps** | 17 | 9 | **−47%** |
-| **Process · est. cost** | $0.060 | $0.050 | **−18%** |
-| **Process · build time** | 191s | 316s | **+65%** |
-| Process · total / reasoning tokens | 39.3k / 17.8k | 33.4k / 17.0k | ≈ |
+| **产物 · 隐藏验收套件 (23)** | 23/23 ✅ | 23/23 ✅ | 无差异 |
+| **产物 · 行覆盖率** | 97.3% | 95.4% | −1.9pp |
+| **产物 · 300KB 耗时** | 30.8ms | 33.0ms | 持平 |
+| 产物 · 实现代码量 | 237 loc | 284 loc | +20% |
+| **过程 · 施工步骤** | 17 | 9 | **−47%** |
+| **过程 · 估算成本** | $0.060 | $0.050 | **−18%** |
+| **过程 · 施工耗时** | 191s | 316s | **+65%** |
+| 过程 · 总 token / 推理 token | 39.3k / 17.8k | 33.4k / 17.0k | 持平 |
 
-### Charts
+### 图表
 
-![hidden acceptance](docs/benchmark/v2/charts/隐藏验收通过数-23.svg)
-![coverage](docs/benchmark/v2/charts/行覆盖率.svg)
-![perf](docs/benchmark/v2/charts/300KB-转换耗时-ms.svg)
-![LOC](docs/benchmark/v2/charts/实现代码量-loc.svg)
-![steps](docs/benchmark/v2/charts/步骤数.svg)
-![tokens](docs/benchmark/v2/charts/总-token-输入-输出.svg)
-![reasoning](docs/benchmark/v2/charts/推理-token.svg)
-![build time](docs/benchmark/v2/charts/施工耗时-秒.svg)
-![cost](docs/benchmark/v2/charts/估算成本-美元.svg)
+![隐藏验收](docs/benchmark/v2/charts/隐藏验收通过数-23.svg)
+![行覆盖率](docs/benchmark/v2/charts/行覆盖率.svg)
+![300KB 耗时](docs/benchmark/v2/charts/300KB-转换耗时-ms.svg)
+![实现代码量](docs/benchmark/v2/charts/实现代码量-loc.svg)
+![步骤数](docs/benchmark/v2/charts/步骤数.svg)
+![总 token](docs/benchmark/v2/charts/总-token-输入-输出.svg)
+![推理 token](docs/benchmark/v2/charts/推理-token.svg)
+![施工耗时](docs/benchmark/v2/charts/施工耗时-秒.svg)
+![估算成本](docs/benchmark/v2/charts/估算成本-美元.svg)
 
-### Conclusion
+### 结论
 
-- **Output quality is identical**: both groups ship spec-compliant software passing **23/23 (incl. 4 XSS-escaping checks)** — with a clear spec, omo does not change output correctness.
-- **omo earns its keep in the process**: **steps −47%, est. cost −18%** (plan-first ⇒ far fewer fix-it-up rework micro-steps; fewer steps ⇒ less cache re-read). Cost: **+65% build time** (more planning/verification per step); tokens roughly even.
-- **Complexity inflection**: on trivial tasks (v1) omo is pure overhead; on complex tasks (v2) it flips to an efficiency win — consistent with "value grows with task complexity".
+- **产物质量两组无差异**：都交付了符合规格、**23/23 通过（含 4 项 XSS 转义安全项）**的软件——规格清晰时，有没有 omo 不影响最终软件的正确性。
+- **omo 的价值体现在过程**：**步骤 −47%、估算成本 −18%**（规划先行 ⇒ 零散的返工式小步骤大幅减少；步骤少 ⇒ 缓存重读少）。代价是**耗时 +65%**（每步规划/验证想得更多），token 基本持平。
+- **复杂度拐点**：简单任务（v1）omo 是纯开销；复杂任务（v2）omo 转为**效率项**——印证「收益随任务复杂度上升」。
 
-### Recommendations
+### 建议
 
-- **Complex, multi-step, rework-prone builds** → enable omo (plan-first + independent verification; measurably fewer rework steps, lower cost).
-- **Trivial single-step tasks** → skip omo, plain DSH (v1 showed it is pure overhead).
-- **Minimize wall-clock** → skip omo; **minimize cost + want stable quality & discipline** → enable omo.
-- omo's enforced **4th-phase independent verification** is its core guard against cargo-cult/leaky work — keep it for complex edits.
-- Limitation: n=3, one task, one model — directional not conclusive; re-run on a larger sample for significance. Full data & reproducibility in [`docs/benchmark`](docs/benchmark).
+- **复杂、多步、易返工的施工任务** → 启用 omo（规划先行 + 独立验证，实测步骤更少、成本更低）。
+- **超简单、单步任务** → 不用 omo，直接用 DSH（v1 已证纯开销）。
+- **追求最短耗时** → 不用 omo；**追求低成本 + 稳定质量 + 文档纪律** → 启用 omo。
+- omo 强制的**第四阶段独立验证**是防遗漏/防幻觉的核心，复杂改动建议保留。
+- 局限：n=3、单任务、单模型，属方向性结论；显著性与幅度需更大样本复测。完整数据与复现见 [`docs/benchmark`](docs/benchmark)。
 
-## Quick Start (DSH)
+## 快速开始（DSH）
 
-Prereqs: DSH installed (`DSH_HOME=~/.dsh`), default agent model `deepseek-v4-flash`, core tools enabled in `~/.dsh/cordis.patch.yml` (`tool-fs`, `tool-todo`, `tool-subagent`, ...).
+前置：已装 DSH（`DSH_HOME=~/.dsh`），默认 agent 模型 `deepseek-v4-flash`，`~/.dsh/cordis.patch.yml` 已启用核心工具（`tool-fs` / `tool-todo` / `tool-subagent` ...）。
 
-### Interactive
+### 交互式
 
 ```bash
-dsh    # or dsh-web
+dsh    # 或 dsh-web
 
-# Paste adapters/dsh/ultrawork-trigger.md (between the --- markers) into the session,
-# then say:
-#   ultrawork build a Node.js hello-world project in ./demo, write tests, run them
+# 把 adapters/dsh/ultrawork-trigger.md 的内容（--- 之间）粘贴进会话，然后说：
+#   ultrawork 在 ./demo 建一个 Node.js hello-world 项目，写测试，跑通自检
 ```
 
-### Auto-inject (one-time setup, keeps working across sessions)
+### Headless（自动化 / CI）
 
 ```bash
-# 1) Sisyphus instructions: copy to DSH's user-global instructions file (hot-reloads)
-cp adapters/dsh/AGENTS.md ~/.dsh/AGENTS.md
-
-# 2) OMO role subagent tools: append the `- id: omo-subagent-*` entries from
-#    adapters/dsh/cordis.patch.yml to ~/.dsh/cordis.patch.yml, then restart dsh web.
-#    You get subagent_hephaestus / subagent_explore / subagent_oracle delegation tools.
-```
-
-### Headless (automation / CI)
-
-```bash
-"$DSH" --profile headless "your task"
+"$DSH" --profile headless "你的任务"
 ```
 
 ## License
 
-**CC0 1.0 Universal (public domain)** — see [LICENSE](./LICENSE). No copyright holder is asserted; no attribution required.
+**CC0 1.0 Universal（公有领域）** — 见 [LICENSE](./LICENSE)。不声明任何版权人，不要求署名。
 
-This project contains no source code from oh-my-openagent. All rights to oh-my-openagent belong to its author, under the SUL license.
+本项目不含 oh-my-openagent 的任何源代码。oh-my-openagent 的全部权利归原作者所有，SUL 协议。
