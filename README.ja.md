@@ -63,6 +63,8 @@ omo-deepseek-harness/
 
 **DeepSeek Harness** 上で行った統制実験：同一のソフトウェア設計仕様書（Markdown→HTML 変換器）を control（omo なし）と omo（ultrawork 4 フェーズ）の 2 グループのエージェントが各々施工。成否は親エージェントが**独立に実行する隠し受け入れスイート + カバレッジ + 性能実測**で判定（サブエージェントの自己申告ではありません）。モデル `deepseek-v4-flash`、各グループ 3 回実行。
 
+> > 各グループは独立に 3 回実行（run1–run3）し、図の各バーは各 run の実測値です。
+
 ### 中位値での比較
 
 | 項目 | control | omo | 差 |
@@ -78,13 +80,7 @@ omo-deepseek-harness/
 
 ### チャート
 
-![隠し受け入れ](docs/benchmark/v2/charts/ja/隐藏验收通过数-23.svg)
-![行カバレッジ](docs/benchmark/v2/charts/ja/行覆盖率.svg)
-![300KB 処理](docs/benchmark/v2/charts/ja/300KB-转换耗时-ms.svg)
-![実装 LOC](docs/benchmark/v2/charts/ja/实现代码量-loc.svg)
 ![ステップ数](docs/benchmark/v2/charts/ja/步骤数.svg)
-![総トークン](docs/benchmark/v2/charts/ja/总-token-输入-输出.svg)
-![推論トークン](docs/benchmark/v2/charts/ja/推理-token.svg)
 ![施工時間](docs/benchmark/v2/charts/ja/施工耗时-秒.svg)
 ![推定コスト](docs/benchmark/v2/charts/ja/估算成本-美元.svg)
 
