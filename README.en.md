@@ -80,9 +80,9 @@ Controlled experiment on **DeepSeek Harness**: the same software spec (a Markdow
 
 ### Charts
 
-![steps](docs/benchmark/v2/charts/en/步骤数.svg)
-![build time](docs/benchmark/v2/charts/en/施工耗时-秒.svg)
-![cost](docs/benchmark/v2/charts/en/估算成本-美元.svg)
+![steps](https://testingcf.jsdelivr.net/gh/Jan-Jianhao-Liu/Jan-Jianhao-Liu.github.io/assets/benchmark/en/steps.svg)
+![build time](https://testingcf.jsdelivr.net/gh/Jan-Jianhao-Liu/Jan-Jianhao-Liu.github.io/assets/benchmark/en/buildtime.svg)
+![cost](https://testingcf.jsdelivr.net/gh/Jan-Jianhao-Liu/Jan-Jianhao-Liu.github.io/assets/benchmark/en/cost.svg)
 
 ### Conclusion
 
