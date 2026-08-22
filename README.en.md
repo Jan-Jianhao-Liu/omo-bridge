@@ -63,6 +63,8 @@ omo-deepseek-harness/
 
 Controlled experiment on **DeepSeek Harness**: the same software spec (a Markdown→HTML converter) built by control (no omo) vs omo (ultrawork 4-phase) agents. Success is judged by an **independent hidden acceptance suite + coverage + measured performance** run by the parent agent — not by what the sub-agent claims. Model: `deepseek-v4-flash`, 3 runs per group.
 
+> Each group ran 3 independent repetitions (run1-run3); each bar corresponds to one run of that group.
+
 ### Core comparison (median)
 
 | Dimension | control | omo | Δ |
